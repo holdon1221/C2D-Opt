@@ -1,0 +1,11 @@
+prefix=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+toolexeclibdir=${libdir}
+includedir=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env/include
+
+Name: libffi
+Description: Library supporting Foreign Function Interfaces
+Version: 3.4.2
+Libs: -L${toolexeclibdir} -lffi
+Cflags: -I${includedir}

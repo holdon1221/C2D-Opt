@@ -1,0 +1,10 @@
+prefix=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env
+exec_prefix=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env
+libdir=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env/lib
+includedir=/Users/bimag/research/ControlContraceptives/src/julia_codes/.CondaPkg/env/include
+
+Name: libjpeg
+Description: A SIMD-accelerated JPEG codec that provides the libjpeg API
+Version: 3.0.0
+Libs: -L${libdir} -ljpeg
+Cflags: -I${includedir}
