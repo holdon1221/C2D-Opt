@@ -1,0 +1,39 @@
+{
+    "arch": "arm64",
+    "build": "py311ha1ab1f8_1",
+    "build_number": 1,
+    "build_string": "py311ha1ab1f8_1",
+    "channel": "https://conda.anaconda.org/conda-forge/osx-arm64",
+    "constrains": [],
+    "depends": [
+        "matplotlib-base >=3.9.2,<3.9.3.0a0",
+        "python >=3.11,<3.12.0a0",
+        "python_abi 3.11.* *_cp311",
+        "tornado >=5"
+    ],
+    "extracted_package_dir": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/matplotlib-3.9.2-py311ha1ab1f8_1",
+    "files": [],
+    "fn": "matplotlib-3.9.2-py311ha1ab1f8_1.conda",
+    "license": "PSF-2.0",
+    "license_family": "PSF",
+    "link": {
+        "source": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/matplotlib-3.9.2-py311ha1ab1f8_1",
+        "type": 1
+    },
+    "md5": "1fed74641bf248bbc08a7788ba9a48f6",
+    "name": "matplotlib",
+    "package_tarball_full_path": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/matplotlib-3.9.2-py311ha1ab1f8_1.tar.bz2",
+    "paths_data": {
+        "paths": [],
+        "paths_version": 1
+    },
+    "platform": "osx",
+    "requested_spec": "matplotlib[version='>=1']",
+    "sha256": "8331e37a5e2a564f3cefbf2425daf7ef9fe6b15609f5deb888c6708b27c58065",
+    "size": 8908,
+    "subdir": "osx-arm64",
+    "timestamp": 1726165112568,
+    "track_features": "",
+    "url": "https://conda.anaconda.org/conda-forge/osx-arm64/matplotlib-3.9.2-py311ha1ab1f8_1.conda",
+    "version": "3.9.2"
+}

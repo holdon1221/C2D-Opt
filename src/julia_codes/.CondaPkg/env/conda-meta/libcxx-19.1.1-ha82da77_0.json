@@ -1,0 +1,76 @@
+{
+    "arch": "arm64",
+    "build": "ha82da77_0",
+    "build_number": 0,
+    "build_string": "ha82da77_0",
+    "channel": "https://conda.anaconda.org/conda-forge/osx-arm64",
+    "constrains": [],
+    "depends": [
+        "__osx >=11.0"
+    ],
+    "extracted_package_dir": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libcxx-19.1.1-ha82da77_0",
+    "files": [
+        "lib/libc++.1.0.dylib",
+        "lib/libc++.1.dylib",
+        "lib/libc++.a",
+        "lib/libc++.dylib",
+        "lib/libc++experimental.a"
+    ],
+    "fn": "libcxx-19.1.1-ha82da77_0.conda",
+    "license": "Apache-2.0 WITH LLVM-exception",
+    "license_family": "Apache",
+    "link": {
+        "source": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libcxx-19.1.1-ha82da77_0",
+        "type": 1
+    },
+    "md5": "4ed0a90fd6a5bdda4ecf98912329993f",
+    "name": "libcxx",
+    "package_tarball_full_path": "/Users/bimag/.julia/scratchspaces/0b3b1443-0f03-428d-bdfb-f27f9c1191ea/root/pkgs/libcxx-19.1.1-ha82da77_0.tar.bz2",
+    "paths_data": {
+        "paths": [
+            {
+                "_path": "lib/libc++.1.0.dylib",
+                "path_type": "hardlink",
+                "sha256": "66c5bf8e150eafc2e722306d86210e38f8b88947cd08d45228cd13f01fbf0861",
+                "sha256_in_prefix": "66c5bf8e150eafc2e722306d86210e38f8b88947cd08d45228cd13f01fbf0861",
+                "size_in_bytes": 1082576
+            },
+            {
+                "_path": "lib/libc++.1.dylib",
+                "path_type": "softlink",
+                "sha256_in_prefix": "66c5bf8e150eafc2e722306d86210e38f8b88947cd08d45228cd13f01fbf0861",
+                "size_in_bytes": 1082576
+            },
+            {
+                "_path": "lib/libc++.a",
+                "path_type": "hardlink",
+                "sha256": "6d6132185b36647e576204dcb6164731e35be1517ee1a094ea3cd54bb671cff1",
+                "sha256_in_prefix": "6d6132185b36647e576204dcb6164731e35be1517ee1a094ea3cd54bb671cff1",
+                "size_in_bytes": 1534376
+            },
+            {
+                "_path": "lib/libc++.dylib",
+                "path_type": "softlink",
+                "sha256_in_prefix": "66c5bf8e150eafc2e722306d86210e38f8b88947cd08d45228cd13f01fbf0861",
+                "size_in_bytes": 1082576
+            },
+            {
+                "_path": "lib/libc++experimental.a",
+                "path_type": "hardlink",
+                "sha256": "6befe712804d4ab7e5ebbd29a06e22c7ffb5b56845f87c1bfc9174239bd1273c",
+                "sha256_in_prefix": "6befe712804d4ab7e5ebbd29a06e22c7ffb5b56845f87c1bfc9174239bd1273c",
+                "size_in_bytes": 311872
+            }
+        ],
+        "paths_version": 1
+    },
+    "platform": "osx",
+    "requested_spec": "",
+    "sha256": "bc2f7cca206fa8a1dfe801c90362a1b6ec2967a75ef60d26e7c7114884c120c0",
+    "size": 522850,
+    "subdir": "osx-arm64",
+    "timestamp": 1727862893739,
+    "track_features": "",
+    "url": "https://conda.anaconda.org/conda-forge/osx-arm64/libcxx-19.1.1-ha82da77_0.conda",
+    "version": "19.1.1"
+}
