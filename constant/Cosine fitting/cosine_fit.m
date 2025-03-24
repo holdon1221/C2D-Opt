@@ -3,10 +3,10 @@ function cosine_fit
 clear all
 
 
-load E2_circ.mat E2_circ                   % load extracted hormonal circadian rhythm data E2_circ, P4_circ, LH_circ, or FSH_circ   
+load E2_circ.mat E2_circ                   % Load the extracted hormonal circadian rhythm data: E2_circ, P4_circ, LH_circ, or FSH_circ   
 
 
-time_data = E2_circ(:,1);
+time_data = E2_circ(:,1);                  % Specify the data: E2_circ, P4_circ, LH_circ, or FSH_circ
 data      = E2_circ(:,2);
 
 x1 = (time_data)';                                        
@@ -18,7 +18,5 @@ startpoints1 = [0.5 4 1];
         
 f1 = fit(x1', y1', cosinor_fit, 'Start', startpoints1)
 
-%plot(f1, x1, y1)
-
-% Convert acrophase c1 from hours to days
+% Note that the acrophase c1 here  is in hours. 
 
