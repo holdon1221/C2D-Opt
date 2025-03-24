@@ -9,17 +9,14 @@ format long
 tic
 
 parameters = 0.05*ones(8,1);    % input initial guess
+%parameter arrangement = [E2amp; E2acro; P4amp; P4acro; LHamp; LHacro; FSHamp; FSHacro];
 
 parameters = sqrt(parameters);  % to avoid negative parameters
-
-%parameter arrangement = [E2amp; E2acro; P4amp; P4acro; LHamp; LHacro; FSHamp; FSHacro]; 
                                               
 opts = optimset('MaxIter', 100000,'MaxFunEvals', 100000);
 [optimal_par, errorval, exitflag, ~] = fminsearch(@fminmerged,parameters,opts);
 
-parameters = optimal_par;
-          
-parameterssquared = parameters.^2		        % optimal parameter set
+parameterssquared = optimal_par.^2		        % optimal parameter set
 
 toc
 
@@ -78,14 +75,14 @@ Lut4old = solutionold(:,13)';
 E2old  = e0  + e1*GrFold  + e2*DomFold  + e3*Lut4old;
 P4old  = p1*Lut3old  + p2*Lut4old;
 
-met(1) = 0.08026;               % input E2 cosine fit amplitude
-met(2) = 24.58/24;              % input E2 cosine fit acrophase
-met(3) = 0.1017;                % input P4 cosine fit amplitude
-met(4) = 8.46/24;               % input P4 cosine fit acrophase
-met(5) = 0.0531;                % input LH cosine fit amplitude
-met(6) = 18.27/24;              % input LH cosine fit acrophase
-met(7) = 0.0659;                % input FSH cosine fit amplitude
-met(8) = 16.46/24;              % input FSH cosine fit acrophase
+met(1) = 0.08026;                
+met(2) = 24.58/24;               
+met(3) = 0.1017;                 
+met(4) = 8.46/24;               
+met(5) = 0.0531;                
+met(6) = 18.27/24;               
+met(7) = 0.0659;                 
+met(8) = 16.46/24;               
 
 E2circ2    = E2old    + met(1)*E2old.*cos(2*pi*(x - met(2)));
 P4circ2    = P4old    + met(3)*P4old.*cos(2*pi*(x - met(4)));
