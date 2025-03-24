@@ -1,6 +1,7 @@
 Codes for the mathematical model in the manuscript: 
 Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy
 
+
 The mathematical model of hormonal contraception was developed using the Gavina et al. model as the baseline model.
 
 A. To develop the model:
@@ -9,11 +10,14 @@ A. To develop the model:
    3. Navigate to the folder constant/Parameter estimation drug PK, then run the file PK_est.m to estimate PK parameters
       
 B. To perform simulation:
+
    Navigate to the folder constant and run the file main_model.m
    
 C. To perform optimization:
+
    Navigate to the folder src/julia_codes, then run the file run_optimization_clock.sh to perform optimization for dosing times from 1:00 to 24:00.
    
+
 
 
 --------------------------------------------
