@@ -41,7 +41,7 @@ Calculate E2, P4, Inh values
 """
 function calculate_auxiliary(x, p, t; n_cycles=nothing)
     GrF, DomF, Lut₂, Lut₃, Lut₄ = map(i -> x[i,:], [6:7;11:13])
-    e_0, e_1, e_2, e_3, p_1, p_2, h_0, h_1, h_2, h_3, θ_1, θ_2, θ_3, θ_4, _, _, _, _, η_E₂, F_E₂, k_a_E₂, k_e_E₂, η_P₄, F_P₄, k_a_P₄, k_e_P₄, V_D_E₂, V_D_P₄, u1, u2, μ = p[[31:58; end-2:end]]
+    e_0, e_1, e_2, e_3, p_1, p_2, h_0, h_1, h_2, h_3, θ_1, θ_2, θ_3, θ_4, _, _, _, _, η_E₂, F_E₂, k_a_E₂, k_21_E₂, alpha1_E₂, beta1_E₂, η_P₄, F_P₄, k_a_P₄, k_21_P₄, alpha1_P₄, beta1_P₄, V_c_E₂, V_c_P₄, u1, u2, μ = p[[31:62; end-2:end]]
     
     # Control
     today = floor.(Int, t)
@@ -49,8 +49,14 @@ function calculate_auxiliary(x, p, t; n_cycles=nothing)
     exo_P₄ = zeros(length(t))
 
     # Code optimization
-    E₂_constant = F_E₂ * k_a_E₂ / (V_D_E₂ * (k_a_E₂ - k_e_E₂))
-    P₄_constant = F_P₄ * k_a_P₄ / (V_D_P₄ * (k_a_P₄ - k_e_P₄))
+    E₂_constant = k_a_E₂ * F_E₂ / V_c_E₂
+    N_E₂_constant = (k_21_E₂ - k_a_E₂) / ( (alpha1_E₂ - k_a_E₂) * (beta1_E₂ - k_a_E₂) )
+    L_E₂_constant = (k_21_E₂ - alpha1_E₂) / ( (k_a_E₂ - alpha1_E₂) * (beta1_E₂ - alpha1_E₂) )
+    M_E₂_constant = (k_21_E₂ - beta1_E₂) / ( (k_a_E₂ - beta1_E₂) * (alpha1_E₂ - beta1_E₂) )
+    P₄_constant = k_a_P₄ * F_P₄ / V_c_P₄
+    N_P₄_constant = (k_21_P₄ - k_a_P₄) / ( (alpha1_P₄ - k_a_P₄) * (beta1_P₄ - k_a_P₄) )
+    L_P₄_constant = (k_21_P₄ - alpha1_P₄) / ( (k_a_P₄ - alpha1_P₄)*(beta1_P₄ - alpha1_P₄) )
+    M_P₄_constant = (k_21_P₄ - beta1_P₄) / ( (k_a_P₄ - beta1_P₄)*(alpha1_P₄ - beta1_P₄) )
     current_pill_time = today .+ μ
 
     for i in eachindex(t)
@@ -63,9 +69,9 @@ function calculate_auxiliary(x, p, t; n_cycles=nothing)
             passed_time_from_pills = t[i] .- i_pill_taking_time # vector of passed time from each administration
 
             # Past pills' contribution
-            exo_E₂[i] = sum(u1[mod_past_days .+ 1] .* E₂_constant .* (exp.(-k_e_E₂ .* passed_time_from_pills) .- exp.(-k_a_E₂ .* passed_time_from_pills)))
-            
-            exo_P₄[i] = sum(u2[mod_past_days .+ 1] .* P₄_constant .* (exp.(-k_e_P₄ .* passed_time_from_pills) .- exp.(-k_a_P₄ .* passed_time_from_pills)))
+	    exo_E₂[i] = sum(u1[mod_past_days .+ 1] .* E₂_constant .* (N_E₂_constant .* exp.(-k_a_E₂ .* passed_time_from_pills) .+ L_E₂_constant .* exp.(-alpha1_E₂ .* passed_time_from_pills) .+ M_E₂_constant .* exp.(-beta1_E₂ .* passed_time_from_pills))) 
+
+	    exo_P₄[i] = sum(u2[mod_past_days .+ 1] .* P₄_constant .* (N_P₄_constant .* exp.(-k_a_P₄ .* passed_time_from_pills) .+ L_P₄_constant .* exp.(-alpha1_P₄ .* passed_time_from_pills) .+ M_P₄_constant .* exp.(-beta1_P₄ .* passed_time_from_pills))) 
         end
 
         # Current pill's contribution
@@ -73,9 +79,9 @@ function calculate_auxiliary(x, p, t; n_cycles=nothing)
             mod_today = mod(today[i], 28)
             passed_time_from_current_pill = t[i] - current_pill_time[i]
 
-            exo_E₂[i] += u1[mod_today + 1] * E₂_constant * (exp(-k_e_E₂ * passed_time_from_current_pill) - exp(-k_a_E₂ * passed_time_from_current_pill))
-            
-            exo_P₄[i] += u2[mod_today + 1] * P₄_constant * (exp(-k_e_P₄ * passed_time_from_current_pill) - exp(-k_a_P₄ * passed_time_from_current_pill))
+            exo_E₂[i] += u1[mod_today + 1] * E₂_constant * (N_E₂_constant * exp(-k_a_E₂ * passed_time_from_current_pill) + L_E₂_constant * exp(-alpha1_E₂ * passed_time_from_current_pill) + M_E₂_constant * exp(-beta1_E₂ * passed_time_from_current_pill)) 
+	    
+	    exo_P₄[i] += u2[mod_today + 1] * P₄_constant * (N_P₄_constant * exp(-k_a_P₄ * passed_time_from_current_pill) + L_P₄_constant * exp(-alpha1_P₄ * passed_time_from_current_pill) + M_P₄_constant * exp(-beta1_P₄ * passed_time_from_current_pill))            
         end
     end
     
@@ -125,8 +131,8 @@ function menstrual_cycle_dynamics!(dx::Vector{Float64}, x::Vector{Float64}, h, p
     Inh_delayed = h_0 + h_1 * DomF_delayed + h_2 * Lut_2_delayed + h_3 * Lut_3_delayed
     
     # Circadian cycle
-    C_LH = 1 + θ_5 * LH * cos(2π * (t - θ_6))
-    C_FSH = 1 + θ_7 * FSH * cos(2π * (t - θ_8))
+    C_LH = 1 + θ_5 * cos(2π * (t - θ_6))
+    C_FSH = 1 + θ_7 * cos(2π * (t - θ_8))
 
     # Code optimizatoin
     E2_squared = E2 * E2
@@ -173,7 +179,7 @@ Calculate E2, P4, Inh values without considering circadian rhythm
 """
 function calculate_auxiliary_no_circ(x, p, t; n_cycles=nothing)
     GrF, DomF, Lut₂, Lut₃, Lut₄ = map(i -> x[i,:], [6:7;11:13])
-    e_0, e_1, e_2, e_3, p_1, p_2, h_0, h_1, h_2, h_3, θ_1, θ_2, θ_3, θ_4, _, _, _, _, η_E₂, F_E₂, k_a_E₂, k_e_E₂, η_P₄, F_P₄, k_a_P₄, k_e_P₄, V_D_E₂, V_D_P₄, u1, u2, μ = p[[31:58; end-2:end]]
+    e_0, e_1, e_2, e_3, p_1, p_2, h_0, h_1, h_2, h_3, θ_1, θ_2, θ_3, θ_4, _, _, _, _, η_E₂, F_E₂, k_a_E₂, k_21_E₂, alpha1_E₂, beta1_E₂, η_P₄, F_P₄, k_a_P₄, k_21_P₄, alpha1_P₄, beta1_P₄, V_c_E₂, V_c_P₄, u1, u2, μ = p[[31:62; end-2:end]]
     
     # Control
     today = floor.(Int, t)
@@ -181,8 +187,14 @@ function calculate_auxiliary_no_circ(x, p, t; n_cycles=nothing)
     exo_P₄ = zeros(length(t))
 
     # Code optimization
-    E₂_constant = F_E₂ * k_a_E₂ / (V_D_E₂ * (k_a_E₂ - k_e_E₂))
-    P₄_constant = F_P₄ * k_a_P₄ / (V_D_P₄ * (k_a_P₄ - k_e_P₄))
+    E₂_constant = k_a_E₂ * F_E₂ / V_c_E₂
+    N_E₂_constant = (k_21_E₂ - k_a_E₂) / ( (alpha1_E₂ - k_a_E₂) * (beta1_E₂ - k_a_E₂) )
+    L_E₂_constant = (k_21_E₂ - alpha1_E₂) / ( (k_a_E₂ - alpha1_E₂) * (beta1_E₂ - alpha1_E₂) )
+    M_E₂_constant = (k_21_E₂ - beta1_E₂) / ( (k_a_E₂ - beta1_E₂) * (alpha1_E₂ - beta1_E₂) )
+    P₄_constant = k_a_P₄ * F_P₄ / V_c_P₄
+    N_P₄_constant = (k_21_P₄ - k_a_P₄) / ( (alpha1_P₄ - k_a_P₄) * (beta1_P₄ - k_a_P₄) )
+    L_P₄_constant = (k_21_P₄ - alpha1_P₄) / ( (k_a_P₄ - alpha1_P₄)*(beta1_P₄ - alpha1_P₄) )
+    M_P₄_constant = (k_21_P₄ - beta1_P₄) / ( (k_a_P₄ - beta1_P₄)*(alpha1_P₄ - beta1_P₄) )
     current_pill_time = today .+ μ
 
     for i in eachindex(t)
@@ -195,9 +207,9 @@ function calculate_auxiliary_no_circ(x, p, t; n_cycles=nothing)
             passed_time_from_pills = t[i] .- i_pill_taking_time # vector of passed time from each administration
 
             # Past pills' contribution
-            exo_E₂[i] = sum(u1[mod_past_days .+ 1] .* E₂_constant .* (exp.(-k_e_E₂ .* passed_time_from_pills) .- exp.(-k_a_E₂ .* passed_time_from_pills)))
-            
-            exo_P₄[i] = sum(u2[mod_past_days .+ 1] .* P₄_constant .* (exp.(-k_e_P₄ .* passed_time_from_pills) .- exp.(-k_a_P₄ .* passed_time_from_pills)))
+	    exo_E₂[i] = sum(u1[mod_past_days .+ 1] .* E₂_constant .* (N_E₂_constant .* exp.(-k_a_E₂ .* passed_time_from_pills) .+ L_E₂_constant .* exp.(-alpha1_E₂ .* passed_time_from_pills) .+ M_E₂_constant .* exp.(-beta1_E₂ .* passed_time_from_pills))) 
+
+	    exo_P₄[i] = sum(u2[mod_past_days .+ 1] .* P₄_constant .* (N_P₄_constant .* exp.(-k_a_P₄ .* passed_time_from_pills) .+ L_P₄_constant .* exp.(-alpha1_P₄ .* passed_time_from_pills) .+ M_P₄_constant .* exp.(-beta1_P₄ .* passed_time_from_pills)))
         end
 
         # Current pill's contribution
@@ -205,9 +217,9 @@ function calculate_auxiliary_no_circ(x, p, t; n_cycles=nothing)
             mod_today = mod(today[i], 28)
             passed_time_from_current_pill = t[i] - current_pill_time[i]
 
-            exo_E₂[i] += u1[mod_today + 1] * E₂_constant * (exp(-k_e_E₂ * passed_time_from_current_pill) - exp(-k_a_E₂ * passed_time_from_current_pill))
-            
-            exo_P₄[i] += u2[mod_today + 1] * P₄_constant * (exp(-k_e_P₄ * passed_time_from_current_pill) - exp(-k_a_P₄ * passed_time_from_current_pill))
+            exo_E₂[i] += u1[mod_today + 1] * E₂_constant * (N_E₂_constant * exp(-k_a_E₂ * passed_time_from_current_pill) + L_E₂_constant * exp(-alpha1_E₂ * passed_time_from_current_pill) + M_E₂_constant * exp(-beta1_E₂ * passed_time_from_current_pill)) 
+	    
+	    exo_P₄[i] += u2[mod_today + 1] * P₄_constant * (N_P₄_constant * exp(-k_a_P₄ * passed_time_from_current_pill) + L_P₄_constant * exp(-alpha1_P₄ * passed_time_from_current_pill) + M_P₄_constant * exp(-beta1_P₄ * passed_time_from_current_pill)) 
         end
     end
     
@@ -238,7 +250,7 @@ function menstrual_cycle_dynamics_no_circ!(dx::Vector{Float64}, x::Vector{Float6
     
     # Parameter values
     V_0_LH, V_1_LH, Km_LH, Ki_LH_P, k_LH, c_LH_P, c_LH_E, v, α_LH, Ki_FSH_Inh, w, k_FSH, c_FSH_P, c_FSH_E, V_FSH, α_FSH, b, c_1, q, c_2, c_3, c_4, d_1, d_2, k_1, k_2, k_3, k_4, α, γ, _, _, _, _, _, _, h_0, h_1, h_2, h_3, _, _, _, _, θ_5, θ_6, θ_7, θ_8 = p[1:48]
-    
+
     # Control
     if isnothing(n_cycles)
         E2, P4, _ = calculate_auxiliary_no_circ(x, p, t)
