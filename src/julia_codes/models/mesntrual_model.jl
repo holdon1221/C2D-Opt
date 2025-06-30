@@ -44,22 +44,22 @@ begin
 	# Auxiliary parameters
 	auxiliary_params = DataFrame(
 	    Parameter = ["e_0", "e_1", "e_2", "e_3", "p_1", "p_2", "h_0", "h_1", "h_2", "h_3"],
-	    Value = [57.60/1000, 0.0269/1000, 0.4196/1000, 0.4923/1000, 0.0032, 0.1188, 0.6606, 0.0193, 0.0159, 0.0119],
+	    Value = [0.0576, 2.69e-5, 0.00041959999999999995, 0.0004923, 0.0032, 0.1188, 0.6606, 0.0193, 0.0159, 0.0119],
 	    Type = fill("Auxiliary", 10)
 	)
 	
 	# Circadian rhythm parameters
 	circadian_params = DataFrame(
 	    Parameter = ["θ_1", "θ_2", "θ_3", "θ_4", "θ_5", "θ_6", "θ_7", "θ_8"],
-	    Value = [0.030114697836448, 1.098662668210435, 0.077275311194199, 0.332881581553223, 0.011149519203617, 0.554148982078172, 0.009979359879606, 1.584341261100748],
+	    Value = [0.0473, 0.0915, 0.0807, 0.3487, 0.2242, 0.5730, 0.1130, 0.5480],
 	    Type = fill("Circadian", 8)
 	)
 	
 	# Absorption parameters
 	abs_params = DataFrame(
-	    Parameter = ["η_E2", "F_E2", "k_a_E2", "k_e_E2", "η_P4", "F_P4", "k_a_P4", "k_e_P4", "V_D_E2", "V_D_P4"],
-	    Value = [1.70, 0.65, 84.15, 2.77, 0.01, 0.90, 79.0, 1.39, 168000, 40000],
-	    Type = fill("Absoprtion", 10)
+	    Parameter = ["η_E2", "F_E2", "k_a_E2", "k_21_E2", "alpha1_E2", "beta1_E2", "η_P4", "F_P4", "k_a_P4", "k_21_P4", "alpha1_P4", "beta1_P4", "V_c_E2", "V_c_P4"],
+	    Value = [1.7, 0.65, 21.07051969967, 4.61122242436, 21.07082859459, 1.31895505995, 0.01, 0.90, 37.31412943223, 9.30569740760, 14.84183803122, 1.7489827014, 74568.37524294440, 22072.72982252732],
+	    Type = fill("Absoprtion", 14)
 	)
 
 	# Initial values
@@ -88,10 +88,6 @@ end
 begin
 	using Serialization
 	using Metaheuristics
-
-	res=deserialize("../../../res/RBA1.9_0.05/3_cycles_opt_21days_limit/20240925_Clock9.0_CCMO{NSGA2}_Gen970_Pop400/result_variable.jls")
-	filtered_res = filter(x -> x.f[1] < 100, res.population)
-	sorted_res_pop = sort(filtered_res, by = x -> -x.f[2])
 end
 
 # ╔═╡ 7b0d729c-088c-4e48-989e-0329b2b42851
@@ -107,9 +103,9 @@ md"""
 # Menstrual cycle model
 
 $$\begin{align}
-\frac{d\text{RP}_\text{LH}}{dt} &= \frac{V_{0,\text{LH}}+\frac{V_{1,\text{LH}}E_2^8}{\text{Km}_\text{LH}^8+E_2^8}}{1+\frac{P_4}{\text{Ki}_{\text{LH},P}}}(1+\theta_1\text{LH}\cos(2\pi(t-\theta_2)))-\frac{k_\text{LH}(1+c_{\text{LH},P}P_4)\text{RP}_\text{LH}}{1+c_{\text{LH},E}E_2}\\
+\frac{d\text{RP}_\text{LH}}{dt} &= \frac{V_{0,\text{LH}}+\frac{V_{1,\text{LH}}E_2^8}{\text{Km}_\text{LH}^8+E_2^8}}{1+\frac{P_4}{\text{Ki}_{\text{LH},P}}}(1+\theta_1\cos(2\pi(t-\theta_2)))-\frac{k_\text{LH}(1+c_{\text{LH},P}P_4)\text{RP}_\text{LH}}{1+c_{\text{LH},E}E_2}\\
 \frac{d\text{LH}}{dt} &= \frac{1}{v}\frac{k_\text{LH}(1+c_{\text{LH},P}P_4)\text{RP}_\text{LH}}{1+c_{\text{LH},E}E_2}-\alpha_\text{LH}\text{LH}\\
-\frac{d\text{RP}_\text{FSH}}{dt} &= \frac{V_\text{FSH}}{1+\frac{\text{Inh}(t-\tau)}{\text{Ki}_{\text{FSH},\text{Inh}}}+\frac{P_4}{w}}(1+\theta_3\text{FSH}\cos(2\pi(t-\theta_4)))-\frac{k_{\text{FSH}}(1+c_{\text{FSH},P}P_4)\text{RP}_\text{FSH}}{1+c_{\text{FSH},E}E_2^2}\\
+\frac{d\text{RP}_\text{FSH}}{dt} &= \frac{V_\text{FSH}}{1+\frac{\text{Inh}(t-\tau)}{\text{Ki}_{\text{FSH},\text{Inh}}}+\frac{P_4}{w}}(1+\theta_3\cos(2\pi(t-\theta_4)))-\frac{k_{\text{FSH}}(1+c_{\text{FSH},P}P_4)\text{RP}_\text{FSH}}{1+c_{\text{FSH},E}E_2^2}\\
 \frac{d\text{FSH}}{dt} &= \frac{1}{v}\frac{k_\text{FSH}(1+c_{\text{FSH},P}P_4)\text{RP}_\text{FSH}}{1+c_{\text{FSH},E}E_2^2}-\alpha_\text{FSH}\text{FSH}\\
 \frac{d\text{RcF}}{dt} &= (b+c_1\text{RcF})\frac{\text{FSH}}{1+\frac{P_4}{q}}-c_2\text{LH}^\alpha\text{RcF}\\
 \frac{d\text{GrF}}{dt} &= c_2\text{LH}^\alpha\text{RcF}-c_3\text{LH}\text{GrF}\\
@@ -197,7 +193,7 @@ function set_params(names::Vector, values::Vector, par_name::String, loc::String
 end
 
 # ╔═╡ 63f29d21-554b-4e33-9766-4e2f8acc6b3e
-@bind parameter_set set_params(["V_0_LH", "V_1_LH", "Km_LH", "Ki_LH_P", "θ_5", "θ_6", "k_LH", "c_LH_P", "c_LH_E", "α_LH", "V_FSH", "Ki_FSH_Inh", "w", "θ_7", "θ_8", "k_FSH", "c_FSH_P", "c_FSH_E", "α_FSH", "v", "b", "q", "c_1", "c_2", "c_3", "c_4", "α", "γ", "d_1", "d_2", "k_1", "k_2", "k_3", "k_4", "e_0", "e_1", "e_2","e_3", "p_1", "p_2", "h_0", "h_1", "h_2", "h_3", "θ_1", "θ_2", "θ_3", "θ_4", "η_E2", "F_E2", "k_a_E2", "k_e_E2", "η_P4", "F_P4", "k_a_P4", "k_e_P4", "V_D_E2", "V_D_P4"], [550.03, 3329.19, 136.05/1000, 6.78, 0.011149519203617, 0.554148982078172, 0.9661, 1.98, 1000*0.0060, 14, 294.90, 16.83, 9.21, 0.009979359879606, 1.584341261100748, 14.59, 52.31, 0.0151*1000^2, 8.21, 2.5, 0.0453, 5.11, 0.1036, 0.0577, 0.0170, 1.14, 0.9505, 0.1615, 0.7537, 0.6866, 0.6699, 0.6388,  0.9191, 1.88, 57.60/1000, 0.0269/1000, 0.4196/1000, 0.4923/1000, 0.0032, 0.1188, 0.6606, 0.0193, 0.0159, 0.0119, 0.030114697836448, 1.098662668210435, 0.077275311194199, 0.332881581553223, 1.70, 0.65, 84.15, 2.77, 0.01, 0.90, 79.0, 1.39, 168000, 40000], "📊", "upper left")
+@bind parameter_set set_params(["V_0_LH", "V_1_LH", "Km_LH", "Ki_LH_P", "θ_5", "θ_6", "k_LH", "c_LH_P", "c_LH_E", "α_LH", "V_FSH", "Ki_FSH_Inh", "w", "θ_7", "θ_8", "k_FSH", "c_FSH_P", "c_FSH_E", "α_FSH", "v", "b", "q", "c_1", "c_2", "c_3", "c_4", "α", "γ", "d_1", "d_2", "k_1", "k_2", "k_3", "k_4", "e_0", "e_1", "e_2","e_3", "p_1", "p_2", "h_0", "h_1", "h_2", "h_3", "θ_1", "θ_2", "θ_3", "θ_4", "η_E2", "F_E2", "k_a_E2", "k_21_E2", "alpha1_E2", "beta1_E2", "η_P4", "F_P4", "k_a_P4", "k_21_P4", "alpha1_P4", "beta1_P4", "V_c_E2", "V_c_P4"], [550.03, 3329.19, 136.05/1000, 6.78, 0.2242, 0.5730, 0.9661, 1.98, 6.0, 14, 294.90, 16.83, 9.21, 0.1130, 0.5480, 14.59, 52.31, 15100, 8.21, 2.5, 0.0453, 5.11, 0.1036, 0.0577, 0.0170, 1.14, 0.9505, 0.1615, 0.7537, 0.6866, 0.6699, 0.6388,  0.9191, 1.88, 0.0576, 2.69e-5, 0.00041959999999999995, 0.0004923, 0.0032, 0.1188, 0.6606, 0.0193, 0.0159, 0.0119, 0.0473, 0.0915, 0.0807, 0.3487, 1.7, 0.65, 21.07051969967, 4.61122242436, 21.07082859459, 1.31895505995, 0.01, 0.90, 37.31412943223, 9.30569740760, 14.84183803122, 1.7489827014, 74568.37524294440, 22072.72982252732], "📊", "upper left")
 
 # ╔═╡ 68d5e720-faf5-488a-ab21-987e23fc6bc8
 function set_params_u(names::Vector, values::Vector, par_name::String, loc::String)
@@ -270,11 +266,6 @@ begin
 	for (i, key) in enumerate(u2_keys)
 		u2_values[i] = control_param[key]
 	end
-
-	u1_values = 21.0*ones(28)
-	# u1_values = zeros(28)
-
-	u2_values = zeros(28)
 	
 	μ = control_param_μ[:μ]/24
 	
@@ -358,8 +349,8 @@ end
 
 # ╔═╡ 594690e4-3b09-44e1-8a1e-304a4bf30c30
 begin
-	plot(new_sol, vars=(0,4), xlims=(28*cycle_num,28*(cycle_num+1)), xlabel="Time (days)", ylabel="FSH [IU/L]", legend=false, linewidth=4, y_guidefontcolor=:dodgerblue, y_foreground_color_text=:dodgerblue, y_foreground_color_axis=:dodgerblue, y_foreground_color_border=:dodgerblue, guidefont = 15, tickfont=15)
-	plot!(twinx(), new_sol.t, xlims=(28*cycle_num,28*(cycle_num+1)), new_P4_values, ylabel="P₄ [ng/ml]", legend=false, linewidth=4, lc=:red, ls=:dash, y_guidefontcolor=:red, y_foreground_color_text=:red, y_foreground_color_axis=:red, y_foreground_color_border=:red, guidefont = 15, tickfont=15)
+	plot(new_sol, vars=(0,4), xlims=(28*1,28*(2)), xlabel="Time (days)", ylabel="FSH [IU/L]", legend=false, linewidth=4, y_guidefontcolor=:dodgerblue, y_foreground_color_text=:dodgerblue, y_foreground_color_axis=:dodgerblue, y_foreground_color_border=:dodgerblue, guidefont = 15, tickfont=15)
+	plot!(twinx(), new_sol.t, xlims=(28*1,28*(2)), new_P4_values, ylabel="P₄ [ng/ml]", legend=false, linewidth=4, lc=:red, ls=:dash, y_guidefontcolor=:red, y_foreground_color_text=:red, y_foreground_color_axis=:red, y_foreground_color_border=:red, guidefont = 15, tickfont=15)
 end
 
 # ╔═╡ e7f02bb6-569c-40d0-a47f-dd41a6b365e2
@@ -3209,16 +3200,16 @@ version = "1.4.1+2"
 # ╟─12e13d2d-b98e-4c55-a179-780c444f3f4b
 # ╟─32053e57-4332-42a5-b6ac-5d2bb7d968bf
 # ╟─66caf0f3-1189-4d8e-ae11-97761449f3b5
-# ╟─fd190d08-3ac1-41d7-9cbc-070fa7829aa5
+# ╠═fd190d08-3ac1-41d7-9cbc-070fa7829aa5
 # ╟─7b0d729c-088c-4e48-989e-0329b2b42851
 # ╠═4636f963-f090-4985-a5cc-7b0d3b3c4a4f
 # ╟─70724140-1e1a-4ebe-b8f0-3187df4c2a43
 # ╟─22ba5c37-4e26-441e-a214-f002b8e86f46
-# ╟─63f29d21-554b-4e33-9766-4e2f8acc6b3e
+# ╠═63f29d21-554b-4e33-9766-4e2f8acc6b3e
 # ╟─a7298496-4fb7-4dea-899e-0a8a00433b87
 # ╟─22776479-6e7d-4afb-8139-b2520b6e7a22
 # ╟─5d4d668b-be4d-405a-9d7f-4cc54acf6782
-# ╠═a75e3f69-0f3b-4164-b410-eeff1ced90c4
+# ╟─a75e3f69-0f3b-4164-b410-eeff1ced90c4
 # ╟─3a4cee59-2fb2-461e-9d7c-e719dde33f91
 # ╟─d459e902-1499-408e-b5da-99452f118ab2
 # ╠═db5748ce-27ec-4e59-b9cc-c76d278d95a9
