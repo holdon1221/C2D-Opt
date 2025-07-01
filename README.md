@@ -76,7 +76,7 @@ This script performs time-of-day optimizations (from 1:00 to 24:00) using a mult
 See res/ReadMe.txt for detailed hyperparameters.
 Final results reflect a combination of optimization runs with the full range of hyperparameter settings shown below. 
 
-⚠️ *Note: While results are stable across platforms, strict numerical reproducibility (identical outputs across runs) is currently guaranteed only on Windows due to OS-level floating-point behavior.*
+*Note: While results are stable across platforms, strict numerical reproducibility (identical outputs across runs) is currently guaranteed only on Windows due to OS-level floating-point behavior.*
 
 - **Seed**: 1
 - **Population**: 400 or 500
