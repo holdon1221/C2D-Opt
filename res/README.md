@@ -35,4 +35,5 @@
 - Crossover probability (`p_cr`) = 0.9
 - Mutation distribution index (`η_m`) = 10
 - Mutation probability (`p_m`) = 0.1
+
 This setting increases search diversity during evolution by setting lower distribution indices (`η_cr, η_m`), which allows offspring to deviate more significantly from parents, and by using a higher mutation probability (`p_m`), encouraging broader exploration and helping to avoid premature convergence.
