@@ -87,12 +87,19 @@ run_group() {
   local log_file="output_${group_name}.txt"
   rm -f "$log_file"
 
-  echo "===== Start group [$group_name] =====" | tee -a "$log_file"
+  local n_total_cores=$(nproc)
+  local threads_per_group=$(( n_total_cores / MODE ))
+  if [ "$threads_per_group" -lt 1 ]; then
+    threads_per_group=1
+  fi
+
+  echo -e "============ Start group [$group_name] ============\n[INFO] Total cores: $n_total_cores | Threads per group: $threads_per_group" | tee -a "$log_file"
+
   for mu in $mu_list
   do
     echo "Running optimization for mu = $mu (group=$group_name)..." | tee -a "$log_file"
     # Changed to >> log_file to avoid pipe/tee issues
-    julia -t10 main_moo.jl --mu "$mu" >> "$log_file" 2>&1
+    julia -t "$threads_per_group" main_moo.jl --mu "$mu" | tee -a "$log_file"
     echo "Completed optimization for mu = $mu (group=$group_name)" | tee -a "$log_file"
   done
   echo "===== All [${group_name}] optimizations completed. =====" | tee -a "$log_file"
@@ -124,8 +131,8 @@ elif [ "$MODE" -eq 2 ]; then
     fi
   done
 
-  run_group "odd"  "$odd_mus"  &
-  run_group "even" "$even_mus" &
+  run_group "mod2_0" "$even_mus" &
+  run_group "mod2_1" "$odd_mus"  &
   wait
 
 elif [ "$MODE" -eq 3 ]; then
