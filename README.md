@@ -94,7 +94,6 @@ Final results reflect a combination of optimization runs with the full range of 
 ### Julia
 - [Julia v1.10.5](https://julialang.org/downloads/oldreleases/#:~:text=v1.10.5%2C%20on%202024%2D08%2D28T15%3A43%3A13Z)
 - **Package management:** via `Project.toml` and `Manifest.toml`
-- **All package versions are fully pinned** to ensure exact reproducibility.
 
 To set up the environment:
 
