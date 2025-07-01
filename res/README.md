@@ -2,7 +2,7 @@
 - **Seed**: 1 (default)
 
 - **Tolerance settings**:
-   Both x_tol and f_tol were set to 1e-4 to ensure convergence with moderate precision.
+   Both `x_tol` and `f_tol` were set to `1e-4` to ensure convergence with moderate precision.
 
 ---
 
