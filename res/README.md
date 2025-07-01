@@ -22,7 +22,7 @@
 - **Function call limit:** Unbounded
 - **Population size (N):** 400 or 500
 - **Random number generator:** `Random.MersenneTwister(1), seed=1`
-- **Algorithm:** `CCMO(NSGA2())
+- **Algorithm:** `CCMO(NSGA2())`
 
 ### Genetic Operator Settings (default)
 - Crossover distribution index (`η_cr`) = 20
