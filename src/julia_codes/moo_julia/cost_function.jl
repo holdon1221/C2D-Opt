@@ -57,7 +57,7 @@ function moo_cost_function(u::Vector{Float64}, local_p::Vector{Any}, is_circadia
 
     # Main objective: maximum P4 concentration over 3 cycles
     obj1 = maximum(P₄)
-    # Secondary objective: total amount of dosing (E2 + P4)
+    # Secondary objective: total amount of dosing (EE + DNG)
     obj2 = sum(u1)+sum(u2)
 
     fu = [obj1, obj2]

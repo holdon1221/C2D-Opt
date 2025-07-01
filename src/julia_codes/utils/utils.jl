@@ -75,7 +75,7 @@ function select_states(st::State, bound::Float64, num_vis::Int64, is_several_cyc
     end
     # Sort by objective 2 (e.g., drug usage)
     sorted_st_pop = sort(filtered_st, by = x -> x.f[2])
-    # If no feasible, select by minimal usage regardless of constraint
+    # If no feasible population, select by minimal usage regardless of constraint
     isempty(sorted_st_pop) ? sorted_st_pop = sort(st.population, by = x -> x.f[2]) : nothing
     # Pick the top num_vis results
     smallest_st = sorted_st_pop[1:num_vis]

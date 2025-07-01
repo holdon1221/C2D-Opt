@@ -1,16 +1,16 @@
 # C2D-Opt: Circadian & Cycle-based Dosing Optimization
 
-This repository contains all the code used in the manuscript:
+This repository contains all the codes used in the manuscript:
 
 > **"Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy"**
 
-We build upon the model proposed by Gavina et al. to simulate and optimize hormonal contraceptive regimens, integrating circadian rhythm and pharmacokinetics/pharmacodynamics (PK/PD).
+We build upon the model proposed by Gavina et al. to simulate and optimize oral contraceptive regimens, integrating circadian rhythm and pharmacokinetics/pharmacodynamics (PK/PD).
 
 ---
 
 ## 📁 Directory Structure
 
-- `constant/`: MATLAB code for model construction and parameter fitting
+- `constant/`: MATLAB code for parameter estimation
   - `Cosine fitting/`: Circadian hormone data fitting
   - `Parameter estimation circadian/`: Circadian parameter estimation
   - `Parameter estimation drug PK/`: PK parameter fitting
@@ -21,7 +21,7 @@ We build upon the model proposed by Gavina et al. to simulate and optimize hormo
 
 ## 🚀 Usage Guide
 
-### A. Model Construction (MATLAB)
+### A. Parameter Estimation (MATLAB)
 
 1. **Cosine fitting**  
   
@@ -74,7 +74,9 @@ This script performs time-of-day optimizations (from 1:00 to 24:00) using a mult
 
 ### ⚙️ Optimization Configuration
 See res/ReadMe.txt for detailed hyperparameters.
-Final results reflect a combination of optimization runs with the full range of hyperparameter settings shown below.
+Final results reflect a combination of optimization runs with the full range of hyperparameter settings shown below. 
+
+*Note: While results are stable across platforms, strict numerical reproducibility (identical outputs across runs) is currently guaranteed only on Windows due to OS-level floating-point behavior.*
 
 - **Seed**: 1
 - **Population**: 400 or 500
