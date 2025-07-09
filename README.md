@@ -123,3 +123,9 @@ Optimizing oral contraceptive timing: Morning intake reduces doses and enhances 
 
 ## 📧 Contact (filled later)
 For questions, please contact the corresponding author.
+
+---
+
+## 📄 License
+
+This code is released under the MIT License. See the [LICENSE](./LICENSE) file for details.
