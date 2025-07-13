@@ -116,12 +116,12 @@ And more (see Project.toml / Manifest.toml for full list)
 
 ---
 
-## 📝 Citation (filled later)
+## 📝 Citation (to be updated)
 If you use this code, please cite the manuscript:
 
-Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy (preprint or journal info here)
+Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy
 
-## 📧 Contact (filled later)
+## 📧 Contact (to be updated)
 For questions, please contact the corresponding author.
 
 ---
