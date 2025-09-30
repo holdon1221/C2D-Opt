@@ -6,11 +6,11 @@ parameters = zeros(3*10*28,1);
 oras = 22;                                      			               % input dosing time
 parameters(1+2*10*28:3*10*28) = round(oras/24,2);
 
-dose_EE2 = 28.2*1000;                   	                              % input EE dose in ng
+dose_EE2 = 28.2*1000;                   	                         % input EE dose in ng
 
-dose_DNG = 320*1000;                  		                              % input DNG dose in ng
+dose_DNG = 320*1000;                  		                          % input DNG dose in ng
  
-   for araw = 1:10  							                                 % number of cycles
+   for araw = 1:10  							                                       % number of cycles
         E2_t0 = 1;
         E2_tf = 21;
         parameters(E2_t0 + (araw-1)*28:E2_tf+ (araw-1)*28) =  dose_EE2;                 
@@ -133,7 +133,7 @@ Inh           = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
 figure(1)
 plot(x, FSH, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]', 'Interpreter','latex')
 ylabel('$FSH$ [IU/L]', 'Interpreter','latex')
@@ -141,7 +141,7 @@ ylabel('$FSH$ [IU/L]', 'Interpreter','latex')
 figure(2)
 plot(x, LH, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$LH$ [IU/L]','Interpreter','latex')
@@ -149,7 +149,7 @@ ylabel('$LH$ [IU/L]','Interpreter','latex')
 figure(3)
 plot(x, E2, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$E_2$ [ng/mL]','Interpreter','latex')
@@ -159,14 +159,14 @@ plot(x, P4, 'k','LineWidth', 1);  set(gca,'FontSize',20)
 hold on
 yline(3)
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$P_4$ [ng/mL]','Interpreter','latex')
 
 figure(5)
 plot(x, Inh, 'k','LineWidth', 1);  set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$Inh$ [IU/mL]','Interpreter','latex')
