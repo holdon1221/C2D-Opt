@@ -217,12 +217,12 @@ Lut3delayInh    = statelag1(12);
 InhdelayInh     = h0 + h1*DomFdelayInh + h2*Lut2delayInh + h3*Lut3delayInh;
 
 
-dRPLHdt     =   ((V0LH + (V1LH*E2^8/(KmLH^8 + E2^8)))/(1 + (P4/KiLHP))).*(1 + par5*LH*cos((2*pi)*(t-par6))) - ...
+dRPLHdt     =   ((V0LH + (V1LH*E2^8/(KmLH^8 + E2^8)))/(1 + (P4/KiLHP))).*(1 + par5*cos((2*pi)*(t-par6))) - ...
                 ((kLH*(1 + cLHP*P4)*RPLH)/(1 + cLHE*E2));
 
 dLHdt       =   (1/2.5)*((kLH*(1 + cLHP*P4)*RPLH)/(1 + cLHE*E2)) - 14*LH;
 
-dRPFSHdt    =   (VFSH/(1 + (InhdelayInh/KiFSHInh) + (P4/w))).*(1 + par7*FSH*cos((2*pi)*(t-par8))) - ...
+dRPFSHdt    =   (VFSH/(1 + (InhdelayInh/KiFSHInh) + (P4/w))).*(1 + par7*cos((2*pi)*(t-par8))) - ...
                  ((kFSH*(1 + cFSHP*P4).*RPFSH)./(1+cFSHE*E2^2));
 
 dFSHdt      =   ((1/2.5)*((kFSH*(1 + cFSHP*P4)*RPFSH)/(1 + cFSHE*E2^2)) -  8.21*FSH); 
