@@ -1,30 +1,31 @@
 function main_model
 
-parameters = zeros(9*28,1);
-E2_t0 = 1; 
-E2_tf = 21; 
-P4_t0 = E2_t0 + 3*28;
-P4_tf = P4_t0 + E2_tf - E2_t0;
+parameters = zeros(3*10*28,1);
 
-oras = 10;                                      % input time
-parameters(1+6*28:9*28) = round(oras/24,3);
 
-dose_EE2 = 21*1000;                             % input EE dose in ng
+oras = 22;                                      			               % input dosing time
+parameters(1+2*10*28:3*10*28) = round(oras/24,2);
 
-   parameters(E2_t0:E2_tf) = dose_EE2;   
-   parameters(E2_t0+28:E2_tf+28) = dose_EE2; 
-   parameters(E2_t0+2*28:E2_tf+2*28) = dose_EE2; 
-   
-dose_DNG = 0*1000;                              % input DNG dose in ng
-   parameters(P4_t0:P4_tf) = dose_DNG;
-   parameters(P4_t0+28:P4_tf+28) = dose_DNG;
-   parameters(P4_t0+2*28:P4_tf+2*28) = dose_DNG;
-  
-parameterssquared = [0.0301; 1.0987; 0.0773; 0.3329; 0.0111; 0.5541; 0.0100; 1.5843];
+dose_EE2 = 28.2*1000;                   	                         % input EE dose in ng
+
+dose_DNG = 320*1000;                  		                          % input DNG dose in ng
+ 
+   for araw = 1:10  							                                       % number of cycles
+        E2_t0 = 1;
+        E2_tf = 21;
+        parameters(E2_t0 + (araw-1)*28:E2_tf+ (araw-1)*28) =  dose_EE2;                 
+
+        P4_t0 = E2_t0 + 28*10;           
+        P4_tf = P4_t0 + E2_tf - E2_t0;
+        parameters(P4_t0+ (araw-1)*28:P4_tf+ (araw-1)*28)  =  dose_DNG;               
+   end   
+
+
+parameterssquared = [0.0473; 0.0915; 0.0807; 0.3487; 0.2242; 0.5730; 0.1130; 0.5480];
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-x    = 0:0.001:3*28;
+x    = 0:0.01:10*28;
 
 e0 = 57.60/1000;         
 e1 = 0.0269/1000;        
@@ -52,24 +53,39 @@ E2bef  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4bef  = p1*Lut3  + p2*Lut4;
 
 
-tend = 3*28;
-tstep = 0.001;
+tend = 10*28;
+tstep = 0.01;
 xt = 0:tstep:tend; 
   
-pkE = [0.65; 0; 0];                                     
-pkP = [0.90; 0; 0];                                     
+pkE = 1.0e+04 * [0.002107051969967
+   0.000461122242436
+   7.456837524294440
+   0.002107082859459
+   0.000131895505995];
 
-pkE(2) = 84.15;   
-pkE(3) = 2.77; 
-VDE2 =  2800*60;
+kaEE = pkE(1);
+k21EE = pkE(2);
+VcEE = pkE(3);
+alpha1EE = pkE(4);
+beta1EE = pkE(5);
+FEE =  0.65;
 
-pkP(2) = 79;
-pkP(3) = 1.39; 
-VDP4  = 40000; 
+pkP = 1.0e+04 * [0.003731412943223
+   0.000930569740760
+   2.207272982252732
+   0.001484183803122
+   0.000174898270145];                                     
 
-parame1(1:3*28)        =  parameters(1:tend);
-parame1(3*28+1:6*28)   =  parameters(tend+1:2*tend);
-parame1(6*28+1:9*28)   = parameters(2*tend+1:3*tend);
+kaDNG = pkP(1);
+k21DNG = pkP(2);
+VcDNG = pkP(3);
+alpha1DNG = pkP(4);
+beta1DNG = pkP(5);
+FDNG =  0.90;  
+
+parame1(1:10*28)        =  parameters(1:tend);
+parame1(10*28+1:2*10*28)   =  parameters(tend+1:2*tend);
+parame1(2*10*28+1:3*10*28)   = parameters(2*tend+1:3*tend);
 
 totalind   = ((tend)/tstep) + 1;
 
@@ -78,9 +94,18 @@ CP4 = zeros((tend), totalind);
  
 
 for la = 1:tend
-    ind = round((la -1 + parame1(2*(tend)+la))*1000 + 1);                 % index corresponding to intake time
-        CE2(la, ind:totalind) = (((pkE(1))*(pkE(2))*parame1(la))/(VDE2*((pkE(2))-(pkE(3))))).*((exp(-(pkE(3))*(xt(1:(totalind +1-ind)))))-(exp(-(pkE(2))*(xt(1:(totalind +1-ind))))));    
-        CP4(la, ind:totalind)  =   (((pkP(1))*(pkP(2))*parame1(la+ (tend)))/(VDP4*((pkP(2))-(pkP(3))))).*((exp(-(pkP(3))*(xt(1:(totalind +1-ind)))))-(exp(-(pkP(2))*(xt(1:(totalind+1-ind))))));   
+    ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to intake time
+        NEE = (k21EE - kaEE)/( (alpha1EE - kaEE)*(beta1EE - kaEE) );
+        LEE = (k21EE - alpha1EE)/( (kaEE - alpha1EE)*(beta1EE - alpha1EE) );
+        MEE = (k21EE - beta1EE)/( (kaEE - beta1EE)*(alpha1EE - beta1EE) );
+
+        CE2(la, ind:totalind)  =  ((kaEE*FEE*parame1(la))/VcEE) * ( NEE*exp(-kaEE*(xt(1:(totalind +1-ind)))) + LEE*exp(-alpha1EE*(xt(1:(totalind +1-ind)))) + MEE*exp(-beta1EE*(xt(1:(totalind +1-ind)))) );        
+
+        NDNG = (k21DNG - kaDNG)/( (alpha1DNG - kaDNG)*(beta1DNG - kaDNG) );
+        LDNG = (k21DNG - alpha1DNG)/( (kaDNG - alpha1DNG)*(beta1DNG - alpha1DNG) );
+        MDNG = (k21DNG - beta1DNG)/( (kaDNG - beta1DNG)*(alpha1DNG - beta1DNG) );
+
+        CP4(la, ind:totalind)  =  ((kaDNG*FDNG*parame1(la + tend))/VcDNG) * ( NDNG*exp(-kaDNG*(xt(1:(totalind +1-ind)))) + LDNG*exp(-alpha1DNG*(xt(1:(totalind +1-ind)))) + MDNG*exp(-beta1DNG*(xt(1:(totalind +1-ind)))) );        
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -97,66 +122,69 @@ end
 E2     = E2bef     + (parameterssquared(1))*E2bef.*cos(2*pi*(x - (parameterssquared(2))));  % endogenous E2
 P4     = P4bef    + (parameterssquared(3))*P4bef.*cos(2*pi*(x - (parameterssquared(4))));   % endogenous P4
 
+E2tot  = E2 + 1.7*totalCE2;
+P4tot  = P4 + 0.01*totalCP4;
+
+
 Inh           = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-
-parame = parameters;
-
-
 figure(1)
 plot(x, FSH, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]', 'Interpreter','latex')
 ylabel('$FSH$ [IU/L]', 'Interpreter','latex')
- 
+
 figure(2)
 plot(x, LH, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$LH$ [IU/L]','Interpreter','latex')
-
+ 
 figure(3)
 plot(x, E2, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$E_2$ [ng/mL]','Interpreter','latex')
-
+ 
 figure(4)
 plot(x, P4, 'k','LineWidth', 1);  set(gca,'FontSize',20)
 hold on
 yline(3)
 set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$P_4$ [ng/mL]','Interpreter','latex')
 
 figure(5)
 plot(x, Inh, 'k','LineWidth', 1);  set(gca,'FontSize',20)
-xlim([0 max(x)]);
+xlim([0 84]);
 xticks([0 28 56 84]);
 xlabel('$t$ [days]','Interpreter','latex')
 ylabel('$Inh$ [IU/mL]','Interpreter','latex')
-
+ 
 
 end
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solution] = solve_mod(parameters)
 
-x    = 0:0.001:3*28;
-tdata = [0 3*28];
+x    = 0:0.01:10*28;
+tdata = [0 10*28];
 
 dInh =  1.5; 
 Init = [167.57; 11.81; 14.48; 11.41; 2.10; 4.12; 0.46; 1.06; 1.67; 4.16; 13.03; 16.48; 10.29];
+
 u = parameters;
 
 solution = dde23(@model, dInh, Init, tdata, [], u);
@@ -205,7 +233,7 @@ h3 = 0.0119;
 w = 9.21;            
 q = 5.11;            
 
-additional_par =  [0.0301; 1.0987; 0.0773; 0.3329; 0.0111; 0.5541; 0.0100; 1.5843];
+additional_par =  [0.0473; 0.0915; 0.0807; 0.3487; 0.2242; 0.5730; 0.1130; 0.5480];
 
 
 par1 =         additional_par(1);
@@ -233,7 +261,7 @@ Lut3            =  state(12);
 Lut4            =  state(13);
 
 tstart = 0;
-tend = 3*28;
+tend = 10*28;
 tend1 = tend + 28;
 
 
@@ -241,32 +269,57 @@ ConE2 = zeros(1,tend1);
 ConP4 = zeros(1,tend1);
 
 
-pkE = [0.65; 0; 0];                                     
-pkP = [0.90; 0; 0];                                    
+pkE = 1.0e+04 * [0.002107051969967
+   0.000461122242436
+   7.456837524294440
+   0.002107082859459
+   0.000131895505995];
 
- pkE(2) = 84.15;   
- pkE(3) = 2.77;  
- VdE2 =  2800*60;
+kaEE = pkE(1);
+k21EE = pkE(2);
+VcEE = pkE(3);
+alpha1EE = pkE(4);
+beta1EE = pkE(5);
+FEE =  0.65;
 
-pkP(2) = 79;
-pkP(3) = 1.39; 
-VdP4  = 40000; 
+pkP = 1.0e+04 * [0.003731412943223
+   0.000930569740760
+   2.207272982252732
+   0.001484183803122
+   0.000174898270145];                                     
+
+kaDNG = pkP(1);
+k21DNG = pkP(2);
+VcDNG = pkP(3);
+alpha1DNG = pkP(4);
+beta1DNG = pkP(5);
+FDNG =  0.90;  
 
 
-param1(1:3*28) = u(1:tend);
-param1(3*28+1:6*28) = u(tend+1:2*tend);
-param1(6*28+1:9*28) = u(2*tend+1:3*tend);  
+param1(1:10*28) = u(1:tend);
+param1(10*28+1:2*10*28) = u(tend+1:2*tend);
+param1(2*10*28+1:3*10*28) = u(2*tend+1:3*tend);  
 
 
 for la = 1:tend 
     if (0 <= t) && (t < (param1(2*(tend)+la)+ la-1))
         ConE2(la) = 0;
         ConP4(la) = 0;
+   
+   elseif (param1(2*tend+la)+ la-1) <= t
+        
+        NEE = (k21EE - kaEE)/( (alpha1EE - kaEE)*(beta1EE - kaEE) );
+        LEE = (k21EE - alpha1EE)/( (kaEE - alpha1EE)*(beta1EE - alpha1EE) );
+        MEE = (k21EE - beta1EE)/( (kaEE - beta1EE)*(alpha1EE - beta1EE) );
+
+        ConE2(la)  =  ((kaEE*FEE*param1(la))/VcEE) * ( NEE*exp(-kaEE*(t-(param1(2*tend+1)+ la-1))) + LEE*exp(-alpha1EE*((t-(param1(2*tend+1)+ la-1)))) + MEE*exp(-beta1EE*((t-(param1(2*tend+1)+ la-1)))) );        
+
+        NDNG = (k21DNG - kaDNG)/( (alpha1DNG - kaDNG)*(beta1DNG - kaDNG) );
+        LDNG = (k21DNG - alpha1DNG)/( (kaDNG - alpha1DNG)*(beta1DNG - alpha1DNG) );
+        MDNG = (k21DNG - beta1DNG)/( (kaDNG - beta1DNG)*(alpha1DNG - beta1DNG) );
+
+        ConP4(la)  =  ((kaDNG*FDNG*param1(la + tend))/VcDNG) * ( NDNG*exp(-kaDNG*((t-(param1(2*tend+1)+ la-1)))) + LDNG*exp(-alpha1DNG*((t-(param1(2*tend+1)+ la-1)))) + MDNG*exp(-beta1DNG*((t-(param1(2*tend+1)+ la-1)))) );        
     else
-        ConE2(la)  = (((pkE(1))*(pkE(2))*param1(la))/(VdE2*((pkE(2))-(pkE(3))))).*((exp(-(pkE(3))*(t-(param1(2*(tend)+la)+ la-1))))-...
-                  (exp(-(pkE(2))*(t-(param1(2*(tend)+la)+ la-1)))));
-        ConP4(la)  = (((pkP(1))*(pkP(2))*param1(la+ (tend)))/(VdP4*((pkP(2))-(pkP(3))))).*((exp(-(pkP(3))*(t-(param1(2*(tend)+la)+ la-1))))-...
-                  (exp(-(pkP(2))*(t-(param1(2*(tend)+la)+ la-1)))));
     end
 end
 
@@ -278,8 +331,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 
-E2              =    (e0 + e1*GrF + e2*DomF + e3*Lut4) + par1*(e0 + e1*GrF + e2*DomF + e3*Lut4)*cos(2*pi*(t-par2)) + 1.7*totalConE2;
-P4              =    (p1*Lut3 + p2*Lut4) + par3*(p1*Lut3 + p2*Lut4)*cos(2*pi*(t-par4)) + 0.01*totalConP4;
+E2              =    (e0 + e1*GrF + e2*DomF + e3*Lut4) + par1*(e0 + e1*GrF + e2*DomF + e3*Lut4)*cos(2*pi*(t-par2)) + 1.7*totalConE2;  
+P4              =    (p1*Lut3 + p2*Lut4) + par3*(p1*Lut3 + p2*Lut4)*cos(2*pi*(t-par4)) + 0.01*totalConP4;  
 
 
 statelag1       = delay(:,1);
@@ -291,11 +344,11 @@ Lut3delayInh    = statelag1(12);
 
 InhdelayInh     = h0 + h1*DomFdelayInh + h2*Lut2delayInh + h3*Lut3delayInh;
 
-dRPLHdt     =   ((V0LH + (V1LH*E2^8/(KmLH^8 + E2^8)))/(1 + (P4/KiLHP))).*(1 + par5*LH*cos((2*pi)*(t-par6))) - ((kLH*(1 + cLHP*P4)*RPLH)/(1 + cLHE*E2));
+dRPLHdt     =   ((V0LH + (V1LH*E2^8/(KmLH^8 + E2^8)))/(1 + (P4/KiLHP))).*(1 + par5*cos((2*pi)*(t-par6))) - ((kLH*(1 + cLHP*P4)*RPLH)/(1 + cLHE*E2));
 
 dLHdt       =   (1/2.5)*((kLH*(1 + cLHP*P4)*RPLH)/(1 + cLHE*E2)) - 14*LH;
 
-dRPFSHdt    =   (VFSH/(1 + (InhdelayInh/KiFSHInh) + (P4/w))).*(1 + par7*FSH*cos((2*pi)*(t-par8))) - ((kFSH*(1 + cFSHP*P4).*RPFSH)./(1+cFSHE*E2^2));
+dRPFSHdt    =   (VFSH/(1 + (InhdelayInh/KiFSHInh) + (P4/w))).*(1 + par7*cos((2*pi)*(t-par8))) - ((kFSH*(1 + cFSHP*P4).*RPFSH)./(1+cFSHE*E2^2));
 
 dFSHdt      =   (1/2.5)*((kFSH*(1 + cFSHP*P4)*RPFSH)/(1 + cFSHE*E2^2)) -  8.21*FSH;  
 
