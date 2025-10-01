@@ -3,29 +3,29 @@
 function PK_est
 
 
-parameterset = [80; 2];         % input initial guess
+parameterset = [80; 2; 40000; 1; 1];         % input initial guess
 
 
 opts = optimset('TolX', 1e-12, 'Maxiter', 10000, 'MaxFunEvals', 10000);
 [optimal_par, errorval, exitflag, ~] = fminsearch(@fminmerged, parameterset,opts);
 
-parameterset = optimal_par      % PK parameters
+parameterset = optimal_par.^2      % PK parameters
 
 end
 
 
 function [ls,sol] = fminmerged(parameterset)
-ka = parameterset(1);
-ke = parameterset(2);
-VD = 40000;        % 168000 for E2
+ka = parameterset(1)^2;
+k21 = parameterset(2)^2;
+Vc = parameterset(3)^2;
+alpha1 = parameterset(4)^2;
+beta1 = parameterset(5)^2;
 F =  0.90;         % 0.65 for E2
-
 
 parameters = zeros(84,1);
 parameters(57:84) = round(7/24,2);
 parameters(1:21) = 3e4;
 parameters(1+28:21+28) = 2e6;
-
 
 x    = [0:0.01:28];
 
@@ -46,8 +46,12 @@ CP4 = zeros((tend), totalind);
 
 for la = 1:tend
     ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to intake time
-        CE2(la, ind:totalind)  =   ((F*ka*parame1(la))/(VD*(ka-ke))).*((exp(-ke*(xt(1:(totalind +1-ind)))))-(exp(-ka*(xt(1:(totalind+1-ind))))));        
-        CP4(la, ind:totalind)  =   ((F*ka*parame1(la+ (tend)))/(VD*(ka-ke))).*((exp(-ke*(xt(1:(totalind +1-ind)))))-(exp(-ka*(xt(1:(totalind+1-ind))))));          
+         N = (k21 - ka)/( (alpha1 - ka)*(beta1 - ka) );
+        L = (k21 - alpha1)/( (ka - alpha1)*(beta1 - alpha1) );
+        M = (k21 - beta1)/( (ka - beta1)*(alpha1 - beta1) );
+
+        CE2(la, ind:totalind)  =  ((ka*F*parame1(la))/Vc) * ( N*exp(-ka*(xt(1:(totalind +1-ind)))) + L*exp(-alpha1*(xt(1:(totalind +1-ind)))) + M*exp(-beta1*(xt(1:(totalind +1-ind)))) );        
+        CP4(la, ind:totalind)  =  ((ka*F*parame1(la + tend))/Vc) * ( N*exp(-ka*(xt(1:(totalind +1-ind)))) + L*exp(-alpha1*(xt(1:(totalind +1-ind)))) + M*exp(-beta1*(xt(1:(totalind +1-ind)))) );          
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
