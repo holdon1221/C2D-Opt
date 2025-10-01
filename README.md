@@ -2,7 +2,7 @@
 
 This repository contains all the codes used in the manuscript:
 
-> **"Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy"**
+> **"Optimizing oral contraceptive timing: Daytime intake reduces doses and enhances efficacy"**
 
 We build upon the model proposed by Gavina et al. to simulate and optimize oral contraceptive regimens, integrating circadian rhythm and pharmacokinetics/pharmacodynamics (PK/PD).
 
@@ -76,7 +76,7 @@ This script performs time-of-day optimizations (from 1:00 to 24:00) using a mult
 See res/ReadMe.txt for detailed hyperparameters.
 Final results reflect a combination of optimization runs with the full range of hyperparameter settings shown below. 
 
-*Note: While results are stable across platforms, strict numerical reproducibility (identical outputs across runs) is currently guaranteed only on Windows due to OS-level floating-point behavior.*
+*Note: While results are stable across platforms, strict numerical reproducibility (identical outputs across runs) is currently guaranteed only on macOS due to OS-level floating-point behavior.*
 
 - **Seed**: 1
 - **Population**: 400 or 500
@@ -119,7 +119,7 @@ And more (see Project.toml / Manifest.toml for full list)
 ## 📝 Citation (to be updated)
 If you use this code, please cite the manuscript:
 
-Optimizing oral contraceptive timing: Morning intake reduces doses and enhances efficacy
+Optimizing oral contraceptive timing: Daytime intake reduces doses and enhances efficacy
 
 ## 📧 Contact (to be updated)
 For questions, please contact the corresponding author.
