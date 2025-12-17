@@ -1,4 +1,4 @@
-% This code produces ka and ke PK parameters
+% This code produces PK parameters
 
 function PK_est
 
