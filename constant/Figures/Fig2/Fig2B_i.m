@@ -1,3 +1,4 @@
+% This script generates Fig 2B(i), showing the normalized circadian rhythm hormone data.
 function Fig2B_i
 
 clear all
