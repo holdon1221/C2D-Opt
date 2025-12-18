@@ -1,14 +1,18 @@
+%This script produces Fig 2B(iii), illustrating both target and simulated hormones with circadian modulation.
 function Fig2B_iii
 
 clear all;
 format long
 
-
+% Fitted circadian parameters for simulation: [E2_amp, E2_phase, P4_amp, P4_phase, LH_amp, LH_phase, FSH_amp, FSH_phase]
 parameters = [0.0473; 0.0915; 0.0807; 0.3487; 0.2242; 0.5730; 0.1130; 0.5480];
 
+% Zero modulation parameters for baseline hormone simulation
 parametersc = [0; 0; 0; 0; 0; 0; 0; 0]; 
 x    = [0:0.01:28];
 
+
+% Generate target hormone profiles
 solutionorig = solve_mod(parametersc)';
 LHorig  = solutionorig(:,2)';
 FSHorig = solutionorig(:,4)';
@@ -18,30 +22,35 @@ Lut2orig = solutionorig(:,11)';
 Lut3orig = solutionorig(:,12)';
 Lut4orig = solutionorig(:,13)';
 
+% Parameters for E2 and P4 calculation
 e0 = 57.60;  
 e1 = 0.0269;
 e2 = 0.4196; 
 e3 = 0.4923;
 p1 = 0.0032;
 p2 = 0.1188; 
+
+% Baseline hormone profiles
 E2orig  = e0  + e1*GrForig  + e2*DomForig  + e3*Lut4orig;
 P4orig  = p1*Lut3orig  + p2*Lut4orig;
 
-met(1) = 0.08026;               % input E2 cosine fit amplitude
-met(2) = 24.58/24;              % input E2 cosine fit acrophase
-met(3) = 0.1017;                % input P4 cosine fit amplitude
-met(4) = 8.46/24;               % input P4 cosine fit acrophase
-met(5) = 0.0531;                % input LH cosine fit amplitude
-met(6) = 18.27/24;              % input LH cosine fit acrophase
-met(7) = 0.0659;                % input FSH cosine fit amplitude
-met(8) = 16.46/24;              % input FSH cosine fit acrophase
+% Parameters from cosine fitting of experimental data
+met(1) = 0.08026;               % E2 cosine fit amplitude
+met(2) = 24.58/24;              % E2 cosine fit acrophase
+met(3) = 0.1017;                % P4 cosine fit amplitude
+met(4) = 8.46/24;               % P4 cosine fit acrophase
+met(5) = 0.0531;                % LH cosine fit amplitude
+met(6) = 18.27/24;              % LH cosine fit acrophase
+met(7) = 0.0659;                % FSH cosine fit amplitude
+met(8) = 16.46/24;              % FSH cosine fit acrophase
 
+% Target hormone profiles
 E2circ    = E2orig    + met(1)*E2orig.*cos(2*pi*(x - met(2)));
 P4circ    = P4orig    + met(3)*P4orig.*cos(2*pi*(x - met(4)));
 LHcirc    = LHorig    + met(5)*LHorig.*cos(2*pi*(x - met(6)));
 FSHcirc   = FSHorig   + met(7)*FSHorig.*cos(2*pi*(x - met(8)));
 
-
+% Simulated profiles With optimized circadian parameters 
 solutions = solve_mod(parameters)';
 LH = solutions(:,2)';
 FSH = solutions(:,4)';
@@ -58,10 +67,11 @@ e3 = 0.4923;
 p1 = 0.0032;
 p2 = 0.1188; 
 
-
+% Baseline hormone profiles for E2 and P4
 E2bef  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4bef  = p1*Lut3  + p2*Lut4;
 
+% E2 and P4 hormone profiles with circadian rhythm
 E2    = E2bef   + (parameters(1))*E2bef.*cos((2*pi)*(x - parameters(2)));
 P4    = P4bef   + (parameters(3))*P4bef.*cos((2*pi)*(x -  parameters(4)));
 
@@ -116,13 +126,13 @@ P4    = P4bef   + (parameters(3))*P4bef.*cos((2*pi)*(x -  parameters(4)));
 
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 function [solution] = solve_mod(parameterset)
-
 x    = 0:0.01:28;
 tdata = [0 28];
 
-dInh =  1.5; 
+dInh =  1.5;         % Delay for Inh feedback
+
+% Initial values for 13 state variables
 RPLH0 = 167.57;                  
 LH0 =   11.81;                  
 RPFSH0 = 14.48;                 
@@ -146,19 +156,15 @@ solution = deval(solution, x);
 end
 
 
-
 function dstate = model(t, state, delay, param)
 
-par1 =         param(1);
-par2 =         param(2);
-par3 =         param(3);
-par4 =         param(4);
-par5 =         param(5);
-par6 =         param(6);
-par7 =         param(7);
-par8 =         param(8);
+% Unpack circadian rhythm parameters
+par1 =         param(1); par2 =         param(2);    % parameters for E2 amp/phase
+par3 =         param(3); par4 =         param(4);    % parameters for P4 amp/phase
+par5 =         param(5); par6 =         param(6);    % parameters for LH amp/phase
+par7 =         param(7); par8 =         param(8);    % parameters for FSH amp/phase
 
-
+% Model parameters
 kLH =  0.9661; 
 V0LH =  550.03; 
 V1LH = 3329.19; 
