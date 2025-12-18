@@ -1,7 +1,9 @@
+% This script plots Fig 3D, comparing total EE and DNG doses across 24 different dosing times using a dual-axis bar chart.
 function Fig3D
 
 days = 1:24;  
 
+% Total EE doses per time slot (in μg/day)
 data1 = [630000
 630000
 630000
@@ -27,6 +29,7 @@ data1 = [630000
 630000
 630000]/1000;
 
+% Total DNG doses per time slot (in μg/day)
 data2 = [15120000
 13440000
 11760000
@@ -52,7 +55,7 @@ data2 = [15120000
 13440000
 12600000]/1000;
 
-
+% Create dual-axis bar plot (EE left, DNG right)
 figure;
 yyaxis left;  
 bar1 = bar(days - 0.2, data1, 0.4, 'FaceColor', [0, 0, 1]);  
