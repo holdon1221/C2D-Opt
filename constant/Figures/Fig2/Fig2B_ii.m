@@ -93,6 +93,7 @@ end
 
 function dstate = model(t, state, delay, u)
 
+% Model parameters
 kLH =  0.9661; 
 V0LH =  550.03; 
 V1LH = 3329.19; 
