@@ -1,22 +1,19 @@
+%This script plots Fig 2C(iii), comparing EE and DNG concentration data with the model simulation.
 function Fig2C_iii
 
+parameters = zeros(84,1);              % Vector for drug dose and dosing time
+parameters(1:21) =  3e4;               % EE dosing for 21 days
+parameters(1+28:21+28) =  2e6;         % DNG dosing for 21 days
+parameters(57:84) = round(7/24,3);     % Dosing time 
 
-parameters = zeros(84,1);
-parameters(1:21) =  3e4;
-parameters(1+28:21+28) =  2e6;
-parameters(57:84) = round(7/24,3);
+tend = 28; tstep = 0.01; xt = 0:tstep:tend; 
 
-
-tend = 28;
-tstep = 0.01;
-xt = 0:tstep:tend; 
-  
+% EE PK parameters  
 pkE = 1.0e+04 * [0.002107051969967
    0.000461122242436
    7.456837524294440
    0.002107082859459
    0.000131895505995];
-
 kaEE = pkE(1);
 k21EE = pkE(2);
 VcEE = pkE(3);
@@ -24,12 +21,12 @@ alpha1EE = pkE(4);
 beta1EE = pkE(5);
 FEE =  0.65;
 
+% DNG PK parameters
 pkP = 1.0e+04 * [0.003731412943223
    0.000930569740760
    2.207272982252732
    0.001484183803122
-   0.000174898270145];                                    %INPUT
-
+   0.000174898270145];                                    
 kaDNG = pkP(1);
 k21DNG = pkP(2);
 VcDNG = pkP(3);
@@ -37,45 +34,41 @@ alpha1DNG = pkP(4);
 beta1DNG = pkP(5);
 FDNG =  0.90;
 
-parame1(1:28) =  parameters(1:tend);
-parame1(29:56) =  parameters(tend+1:2*tend);
-parame1(57:84) = round(parameters(2*tend+1:3*tend),2);
+parame1(1:28) =  parameters(1:tend);                    % EE daily dose
+parame1(29:56) =  parameters(tend+1:2*tend);            % DNG daily dose
+parame1(57:84) = round(parameters(2*tend+1:3*tend),2);  % Dosing time
 
 totalind   = ((tend)/tstep) + 1;
 
-CE2 = zeros((tend), totalind);
-CP4 = zeros((tend), totalind);
+CE2 = zeros((tend), totalind);      % EE concentration matrix
+CP4 = zeros((tend), totalind);      % DNG concentration matrix
  
-
 for la = 1:tend
-     ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to intake time
+     ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to dosing time
+        % Coefficients for total EE concentration
         NEE = (k21EE - kaEE)/( (alpha1EE - kaEE)*(beta1EE - kaEE) );
         LEE = (k21EE - alpha1EE)/( (kaEE - alpha1EE)*(beta1EE - alpha1EE) );
         MEE = (k21EE - beta1EE)/( (kaEE - beta1EE)*(alpha1EE - beta1EE) );
 
         CE2(la, ind:totalind)  =  ((kaEE*FEE*parame1(la))/VcEE) * ( NEE*exp(-kaEE*(xt(1:(totalind +1-ind)))) + LEE*exp(-alpha1EE*(xt(1:(totalind +1-ind)))) + MEE*exp(-beta1EE*(xt(1:(totalind +1-ind)))) );        
 
-
-
+        % Coefficients for total DNG concentration
         NDNG = (k21DNG - kaDNG)/( (alpha1DNG - kaDNG)*(beta1DNG - kaDNG) );
         LDNG = (k21DNG - alpha1DNG)/( (kaDNG - alpha1DNG)*(beta1DNG - alpha1DNG) );
         MDNG = (k21DNG - beta1DNG)/( (kaDNG - beta1DNG)*(alpha1DNG - beta1DNG) );
 
         CP4(la, ind:totalind)  =  ((kaDNG*FDNG*parame1(la + tend))/VcDNG) * ( NDNG*exp(-kaDNG*(xt(1:(totalind +1-ind)))) + LDNG*exp(-alpha1DNG*(xt(1:(totalind +1-ind)))) + MDNG*exp(-beta1DNG*(xt(1:(totalind +1-ind)))) );        
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-totalCE2B = zeros(1, totalind);
-totalCP4B = zeros(1, totalind);
+totalCE2B = zeros(1, totalind);  % Total EE concentration across all days
+totalCP4B = zeros(1, totalind);  % Total DNG concentration across all days
 
 for su = 1:(tend)
     totalCE2B = totalCE2B + CE2(su, 1:totalind);
     totalCP4B = totalCP4B + CP4(su, 1:totalind);
 end
 
-
 figure(1)
+% Time points of blood sampling converted to time index
 rnd1 = round((6.29)*100+1);
 rnd2 = round((6.29+0.34/24)*100+1);
 rnd3 = round((6.29+0.68/24)*100+1);
@@ -94,10 +87,16 @@ rnd15 = round((6.29+8.97/24)*100+1);
 rnd16 = round((6.29+9.91/24)*100+1);
 rnd17 = round((6.29+11.98/24)*100+1);
 rnd18 = round((6.29+23.99/24)*100+1);
+
+% Time points of blood sampling
 x_E2 = [xt(rnd1); xt(rnd2); xt(rnd3); xt(rnd4); xt(rnd5); xt(rnd6); xt(rnd7); xt(rnd8); xt(rnd9);
     xt(rnd10); xt(rnd11); xt(rnd12); xt(rnd13); xt(rnd14); xt(rnd15); xt(rnd16); xt(rnd17); xt(rnd18)];
+
+% Observed EE data
 y_E2 = [18.44; 50.81; 111.03; 126.84; 122.34; 116.70; 100.90; 84.35; 82.47; 76.84; 62.55;
     52.41; 45.27; 41.15; 37.78; 36.66; 34.44; 21.45]./1000;
+
+
 
 plot(xt, totalCE2B, 'b', 'LineWidth', 1)
 hold on
@@ -113,6 +112,7 @@ xlabel('$t$ after dose [hours]','Interpreter','latex')
 ylabel('$EE$ [ng/mL]','Interpreter','latex')
 
 figure(2)
+% Time points of blood sampling converted to time index
 rnd1 = round((6.29+0.08/24)*100+1);
 rnd2 = round((6.29+0.33/24)*100+1);
 rnd3 = round((6.29+0.66/24)*100+1);
@@ -132,8 +132,11 @@ rnd16 = round((6.29+9.97/24)*100+1);
 rnd17 = round((6.29+12.01/24)*100+1);
 rnd18 = round((6.29+23.98/24)*100+1);
 
+% Time points of blood sampling
 x_P4 = [xt(rnd1); xt(rnd2); xt(rnd3); xt(rnd4); xt(rnd5); xt(rnd6); xt(rnd7); xt(rnd8); xt(rnd9);
     xt(rnd10); xt(rnd11); xt(rnd12); xt(rnd13); xt(rnd14); xt(rnd15); xt(rnd16); xt(rnd17); xt(rnd18)];
+
+% Observed DNG data
 y_P4 = [10.77; 32.14; 60.80; 63.75; 64.80; 63.07; 58.73; 55.26; 51.96; 48.84; 45.20;
     40.69; 36.53; 33.58; 29.59; 27.69; 25.97; 11.46];
 plot(xt, totalCP4B, 'm', 'LineWidth', 1)
@@ -153,4 +156,3 @@ ylabel('$DNG$ [ng/mL]','Interpreter','latex')
 
 
 end
-
