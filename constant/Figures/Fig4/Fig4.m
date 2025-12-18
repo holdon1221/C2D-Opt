@@ -1,11 +1,13 @@
+% This script generates Fig 4, comparing hormone and PK profiles under two dosing times: morning (11:00) vs evening (22:00).
+% The model runs for 3 cycles (84 days).
+
 function Fig4
 
-
-parameters = zeros(3*3*28,1);
-E2_t0 = 1; 
-E2_tf = 21; 
-P4_t0 = E2_t0 + 3*28;
-P4_tf = P4_t0 + E2_tf - E2_t0;
+parameters = zeros(3*3*28,1); % 3 cycles of EE doses, DNG doses, and dosing times
+E2_t0 = 1;                       % EE dosing start day slot
+E2_tf = 21;                      % EE dosing end day slot
+P4_t0 = E2_t0 + 3*28;            % DNG dosing start day slot 
+P4_tf = P4_t0 + E2_tf - E2_t0;   % DNG dosing end day slot
 
 P4res    = zeros(2, 8401);
 RPLHcirc = zeros(2, 8401);
@@ -20,11 +22,10 @@ Lut4res  = zeros(2, 8401);
 time = [11,22];
 
 for i = 1:2
-  oras = time(i);                                          % input time
-  parameters(1+6*28:9*28) = round(oras/24,2);
+  oras = time(i);                                          % Dosing time in hours
+  parameters(1+6*28:9*28) = round(oras/24,2);              % Dosing time in fraction of day
 
 dose_EE2 = 28.2*1000;                                      % input EE dose in ng
-
    parameters(E2_t0:E2_tf) = dose_EE2;   
    parameters(E2_t0+28:E2_tf+28) = dose_EE2; 
    parameters(E2_t0+2*28:E2_tf+2*28) = dose_EE2;   
@@ -33,11 +34,11 @@ dose_DNG = 320*1000;                                        % input DNG dose in 
    parameters(P4_t0:P4_tf) = dose_DNG;
    parameters(P4_t0+28:P4_tf+28) = dose_DNG;
    parameters(P4_t0+2*28:P4_tf+2*28) = dose_DNG;
-  
+
+% Circadian parameters [E2, P4, LH, FSH], all set to zero except for LH.
 parameterssquared = [0; 0.0915; 0; 0.3487; 0.2242; 0.5730; 0; 0.5480];
 
-
-
+% Coefficients for E2, P4, and Inhibin calculations
 e0 = 57.60/1000;         
 e1 = 0.0269/1000;        
 e2 = 0.4196/1000;        
@@ -61,21 +62,20 @@ Lut2 = solutions(:,11)';
 Lut3 = solutions(:,12)';
 Lut4 = solutions(:,13)';
 
-
+% Endogenous E2 and P4
 E2bef  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4bef  = p1*Lut3  + p2*Lut4;
-
 
 tend = 3*28;
 tstep = 0.01;
 xt = 0:tstep:tend; 
-  
+
+% EE PK parameters  
 pkE = 1.0e+04 * [0.002107051969967
    0.000461122242436
    7.456837524294440
    0.002107082859459
    0.000131895505995];
-
 kaEE = pkE(1);
 k21EE = pkE(2);
 VcEE = pkE(3);
@@ -83,12 +83,12 @@ alpha1EE = pkE(4);
 beta1EE = pkE(5);
 FEE =  0.65;
 
+% DNG PK parameters
 pkP = 1.0e+04 * [0.003731412943223
    0.000930569740760
    2.207272982252732
    0.001484183803122
    0.000174898270145];                                    
-
 kaDNG = pkP(1);
 k21DNG = pkP(2);
 VcDNG = pkP(3);
@@ -98,18 +98,20 @@ FDNG =  0.90;
 
 totalind   = ((tend)/tstep) + 1;
 
-CE2 = zeros((tend), totalind);
-CP4 = zeros((tend), totalind);
+CE2 = zeros((tend), totalind);  % Individual EE concentration
+CP4 = zeros((tend), totalind);  % Individual DNG concentration
  
 
 for la = 1:tend
-    ind = round((la -1 + parameters(2*(tend)+la))*100 + 1);                 % index corresponding to intake time
+    ind = round((la -1 + parameters(2*(tend)+la))*100 + 1);                 % index corresponding to dosing time
+        % Coefficients for EE concentration
         NEE = (k21EE - kaEE)/( (alpha1EE - kaEE)*(beta1EE - kaEE) );
         LEE = (k21EE - alpha1EE)/( (kaEE - alpha1EE)*(beta1EE - alpha1EE) );
         MEE = (k21EE - beta1EE)/( (kaEE - beta1EE)*(alpha1EE - beta1EE) );
 
         CE2(la, ind:totalind)  =  ((kaEE*FEE*parameters(la))/VcEE) * ( NEE*exp(-kaEE*(xt(1:(totalind +1-ind)))) + LEE*exp(-alpha1EE*(xt(1:(totalind +1-ind)))) + MEE*exp(-beta1EE*(xt(1:(totalind +1-ind)))) );        
 
+        % Coefficients for DNG concentration
         NDNG = (k21DNG - kaDNG)/( (alpha1DNG - kaDNG)*(beta1DNG - kaDNG) );
         LDNG = (k21DNG - alpha1DNG)/( (kaDNG - alpha1DNG)*(beta1DNG - alpha1DNG) );
         MDNG = (k21DNG - beta1DNG)/( (kaDNG - beta1DNG)*(alpha1DNG - beta1DNG) );
@@ -117,8 +119,8 @@ for la = 1:tend
         CP4(la, ind:totalind)  =  ((kaDNG*FDNG*parameters(la + tend))/VcDNG) * ( NDNG*exp(-kaDNG*(xt(1:(totalind +1-ind)))) + LDNG*exp(-alpha1DNG*(xt(1:(totalind +1-ind)))) + MDNG*exp(-beta1DNG*(xt(1:(totalind +1-ind)))) );        
 end
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+% Total EE and DNG concentration
 totalCE2 = zeros(1, totalind);
 totalCP4 = zeros(1, totalind);
 
