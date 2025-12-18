@@ -45,8 +45,8 @@ CP4 = zeros((tend), totalind);
  
 
 for la = 1:tend
-    ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to intake time
-         N = (k21 - ka)/( (alpha1 - ka)*(beta1 - ka) );
+    ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to dosing time
+        N = (k21 - ka)/( (alpha1 - ka)*(beta1 - ka) );
         L = (k21 - alpha1)/( (ka - alpha1)*(beta1 - alpha1) );
         M = (k21 - beta1)/( (ka - beta1)*(alpha1 - beta1) );
 
@@ -73,6 +73,7 @@ load P4_PK_data.mat P4_PK_data             % load PK data
 time_PK_data = P4_PK_data(:,1);            % use E2_PK_data for EE
 PK_data      = P4_PK_data(:,2);
 
+% Time points of blood sampling converted to time index
 rnd1 = round((6.29+time_PK_data(1))*100+1);
 rnd2 = round((6.29+time_PK_data(2))*100+1);
 rnd3 = round((6.29+time_PK_data(3))*100+1);
@@ -92,7 +93,7 @@ rnd16 = round((6.29+time_PK_data(16))*100+1);
 rnd17 = round((6.29+time_PK_data(17))*100+1);
 rnd18 = round((6.29+time_PK_data(18))*100+1);
 
-
+% Simulated DNG concentration
 Con = [totalCP4B(rnd1); totalCP4B(rnd2); totalCP4B(rnd3); totalCP4B(rnd4); totalCP4B(rnd5); 
     totalCP4B(rnd6); totalCP4B(rnd7); totalCP4B(rnd8); totalCP4B(rnd9); totalCP4B(rnd10); 
     totalCP4B(rnd11); totalCP4B(rnd12); totalCP4B(rnd13); totalCP4B(rnd14); totalCP4B(rnd15); 
