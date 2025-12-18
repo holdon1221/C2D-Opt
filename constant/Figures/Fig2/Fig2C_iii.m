@@ -40,19 +40,19 @@ parame1(57:84) = round(parameters(2*tend+1:3*tend),2);  % Dosing time
 
 totalind   = ((tend)/tstep) + 1;
 
-CE2 = zeros((tend), totalind);      % EE concentration matrix
-CP4 = zeros((tend), totalind);      % DNG concentration matrix
+CE2 = zeros((tend), totalind);      % Individual EE concentration 
+CP4 = zeros((tend), totalind);      % Individual DNG concentration 
  
 for la = 1:tend
      ind = round((la -1 + parame1(2*(tend)+la))*100 + 1);                 % index corresponding to dosing time
-        % Coefficients for total EE concentration
+        % Coefficients for EE concentration
         NEE = (k21EE - kaEE)/( (alpha1EE - kaEE)*(beta1EE - kaEE) );
         LEE = (k21EE - alpha1EE)/( (kaEE - alpha1EE)*(beta1EE - alpha1EE) );
         MEE = (k21EE - beta1EE)/( (kaEE - beta1EE)*(alpha1EE - beta1EE) );
 
         CE2(la, ind:totalind)  =  ((kaEE*FEE*parame1(la))/VcEE) * ( NEE*exp(-kaEE*(xt(1:(totalind +1-ind)))) + LEE*exp(-alpha1EE*(xt(1:(totalind +1-ind)))) + MEE*exp(-beta1EE*(xt(1:(totalind +1-ind)))) );        
 
-        % Coefficients for total DNG concentration
+        % Coefficients for DNG concentration
         NDNG = (k21DNG - kaDNG)/( (alpha1DNG - kaDNG)*(beta1DNG - kaDNG) );
         LDNG = (k21DNG - alpha1DNG)/( (kaDNG - alpha1DNG)*(beta1DNG - alpha1DNG) );
         MDNG = (k21DNG - beta1DNG)/( (kaDNG - beta1DNG)*(alpha1DNG - beta1DNG) );
