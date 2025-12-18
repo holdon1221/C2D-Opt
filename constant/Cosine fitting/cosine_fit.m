@@ -1,3 +1,6 @@
+% This script performs a cosinor fit to circadian hormone data (E2, P4, LH, FSH).
+% It normalizes the data and fits a cosine curve to capture the rhythmic pattern.
+
 function cosine_fit
 
 clear all
