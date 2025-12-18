@@ -1,14 +1,20 @@
+% This script draws Fig 2B(ii), depicting simulated hormone profiles without circadian rhythm.
 function Fig2B_ii
 
 
 x    = 0:0.001:28;
 
+% Coefficients for E2 calculation based on follicle stages
 e0 = 57.60/1000;         
 e1 = 0.0269/1000;        
 e2 = 0.4196/1000;        
-e3 = 0.4923/1000;        
+e3 = 0.4923/1000;   
+
+% Coefficients for P4 calculation
 p1 = 0.0032;             
-p2 = 0.1188;             
+p2 = 0.1188;
+
+% Coefficients for Inh calculation
 h0 = 0.6606;  
 h1 = 0.0193; 
 h2 = 0.0159; 
@@ -16,7 +22,11 @@ h3 = 0.0119;
 
 tdata = [0 28];
 
-dInh =  1.5; 
+% Time delay for Inh feedback (in days)
+dInh =  1.5;
+
+% Initial conditions for 13 state variables:
+% [RPLH, LH, RPFSH, FSH, RcF, GrF, DomF, Sc1, Sc2, Lut1, Lut2, Lut3, Lut4]
 Init = [167.57; 11.81; 14.48; 11.41; 2.10; 4.12; 0.46; 1.06; 1.67; 4.16; 13.03; 16.48; 10.29];
 
 solution = dde23(@model, dInh, Init, tdata);
@@ -34,7 +44,7 @@ E2  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4  = p1*Lut3  + p2*Lut4;
 Inh           = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 
 figure(1)
 plot(x, FSH, 'k','LineWidth', 1);  
@@ -79,9 +89,6 @@ ylabel('$P_4$ [ng/mL]','Interpreter','latex')
 
 
 end
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 
 
 function dstate = model(t, state, delay, u)
