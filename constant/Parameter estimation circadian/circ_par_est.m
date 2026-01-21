@@ -1,6 +1,45 @@
-% This code produces a parameter set for amplitude and acrophases of E2, P4, LH, and FSH circadian components of the menstrual cycle model.
+% PURPOSE (paper-guided):
+%   Estimate the circadian forcing parameters used in the menstrual-cycle
+%   endocrine model by fitting a 24-hour cosine modulation to hormone
+%   trajectories (E2, P4, LH, FSH).
+%
+%   In the paper, circadian effects are represented as a simple periodic
+%   (24 h) modulation, parameterized by:
+%     - amplitude (how strong the daily rhythm is)
+%     - acrophase / phase (timing of the peak within a day)
+%
+%   This script calibrates those parameters by minimizing the mismatch
+%   between:
+%     (i) model outputs with candidate circadian parameters, and
+%     (ii) target circadian-modulated outputs constructed from
+%          pre-estimated amplitude/phase values (met) derived from
+%          circadian hormone data (see cosine_fit.m workflow).
+%
+% KEY IDEA (what is being optimized):
+%   parameters = [E2amp; E2phase; P4amp; P4phase; LHamp; LHphase; FSHamp; FSHphase]
+%   where each pair (amp, phase) defines a modulation:
+%	For instance, in the case of E2:
+%       E2_circ(t) = E2_baseline(t) + amp * E2_baseline(t) * cos(2*pi*(t - phase))
+%   with t measured in DAYS, so cos(2*pi*(...)) corresponds to a 1-day period.
+%
+% NUMERICAL DETAILS:
+%   - Uses fminsearch (Nelder–Mead) to minimize a sum of squared relative errors.
+%   - Parameters are squared (p.^2) to enforce non-negativity without constraints.
+%   - The endocrine dynamics are simulated with dde23 because inhibin feedback
+%     includes a discrete delay (dInh).
+%
+% OUTPUT:
+%   parameterssquared: 8x1 optimal circadian parameters (amplitudes & phases).
+% =========================================================================
 
 function circ_par_est
+
+% -------------------------------------------------------------------------
+% [1] Top-level calibration routine
+%     - set initial guesses
+%     - run unconstrained optimization (fminsearch)
+%     - return squared parameters as final (non-negative) estimates
+% -------------------------------------------------------------------------
 
 clear all;
 format long
@@ -8,14 +47,16 @@ format long
 
 tic
 
+% Initial guess for the 8 circadian parameters (in sqrt-space).
+% Squaring later yields the actual parameters, ensuring non-negativity.
 parameters = 0.05*ones(8,1);    % input initial guess
-%parameter arrangement = [E2amp; E2acro; P4amp; P4acro; LHamp; LHacro; FSHamp; FSHacro];
 
 parameters = sqrt(parameters);  % to avoid negative parameters
                                               
 opts = optimset('MaxIter', 100000,'MaxFunEvals', 100000);
 [optimal_par, errorval, exitflag, ~] = fminsearch(@fminmerged,parameters,opts);
 
+% Convert back from sqrt-parameterization to the actual parameter values.
 parameterssquared = optimal_par.^2		        % optimal parameter set
 
 toc
@@ -23,13 +64,24 @@ toc
 end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -------------------------------------------------------------------------
+% [2] Objective function evaluated by fminsearch
+%     Input "parameters" is in sqrt-space; we square each entry below.
+%     The objective is built by comparing model-implied circadian modulation
+%     against a target modulation (met) derived from circadian data.
+% -------------------------------------------------------------------------
 function [ls,sol] = fminmerged(parameters)
 
+% Square parameters to ensure non-negative amplitudes and phases.
+% NOTE: phases here are expressed in DAYS (0–1), not hours.
+%       (e.g., 18.27/24 in met corresponds to ~0.76125 days).
 para1 = parameters(1).^2;
 para2 = parameters(2).^2;
 para3 = parameters(3).^2;
 para4 = parameters(4).^2;
 
+% Simulation horizon for calibration: 56 days (= two 28-day cycles).
+% Time step: 0.01 day (~14.4 minutes), matching the paper’s temporal resolution.
 x    = [0:0.01:56];
 
 e0 = 57.60;  
@@ -53,14 +105,20 @@ Lut2 = solution(:,11)';
 Lut3 = solution(:,12)';
 Lut4 = solution(:,13)';
 
+% Baseline endogenous hormones computed from ovarian compartments (no circadian forcing).
+% These are then modulated by the candidate cosine parameters (para1..para4).
 E2es  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4pr  = p1*Lut3  + p2*Lut4;
 Inh   = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
 
+% Candidate circadian-modulated endogenous E2/P4 (period = 1 day).
 E2    = E2es + para1*E2es.*cos(2*pi*(x  - para2));
 P4    = P4pr + para3*P4pr.*cos(2*pi*(x  - para4));
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Construct a “no-circadian” reference run (all amplitudes/phases set to zero).
+% This produces the baseline trajectories (E2old, P4old, LHold, FSHold) used
+% to build the target circadian waveforms via the met parameters below.
 parametersc = [0; 0; 0; 0; 0; 0; 0; 0];   
 
 solutionold = solve_mod(parametersc)';
@@ -75,6 +133,12 @@ Lut4old = solutionold(:,13)';
 E2old  = e0  + e1*GrFold  + e2*DomFold  + e3*Lut4old;
 P4old  = p1*Lut3old  + p2*Lut4old;
 
+% Reference circadian parameters (met) obtained from fitting cosine curves
+% to circadian hormone data (see cosine_fit.m).
+% Each hormone has:
+%   met(k)   = amplitude (unitless relative modulation)
+%   met(k+1) = phase/acrophase in DAYS (hours/24)
+% Ordering: E2 (1–2), P4 (3–4), LH (5–6), FSH (7–8).
 met(1) = 0.08026;                
 met(2) = 24.58/24;               
 met(3) = 0.1017;                 
@@ -84,17 +148,20 @@ met(6) = 18.27/24;
 met(7) = 0.0659;                 
 met(8) = 16.46/24;               
 
+% Build target circadian-modulated waveforms from the baseline run + met parameters.
 E2circ2    = E2old    + met(1)*E2old.*cos(2*pi*(x - met(2)));
 P4circ2    = P4old    + met(3)*P4old.*cos(2*pi*(x - met(4)));
 LHcirc2    = LHold    + met(5)*LHold.*cos(2*pi*(x - met(6)));
 FSHcirc2   = FSHold   + met(7)*FSHold.*cos(2*pi*(x - met(8)));
 
+% Relative error between candidate modulation (E2, P4, LH, FSH) and target modulation.
+% Using relative error reduces the impact of absolute scale differences across hormones.
 error1 = (E2 - E2circ2)./E2circ2;
 error2 = (P4 - P4circ2)./P4circ2;
 error3 = (LH - LHcirc2)./LHcirc2;
 error4 = (FSH - FSHcirc2)./FSHcirc2;
 
-
+% Sum of squared relative errors (scalar objective for fminsearch).
 ls1 = error1*error1';
 ls2 = error2*error2';
 ls3 = error3*error3';
@@ -106,6 +173,11 @@ end
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% -------------------------------------------------------------------------
+% [3] solve_mod(parameterset)
+%     Runs the endocrine DDE system for the calibration horizon.
+%     parameterset encodes the 8 circadian parameters used inside model().
+% -------------------------------------------------------------------------
 function [solution] = solve_mod(parameterset)
 
 x    = 0:0.01:56 ;
@@ -130,6 +202,7 @@ Init = [RPLH0; LH0; RPFSH0; FSH0; ReF0; SeF0; PrF0;
         Ov10; Ov20; Lut10; Lut20; Lut30; Lut40];
 param = parameterset.^2;
 
+% Solve DDE with a single discrete delay (dInh) representing delayed inhibin feedback.
 solution = dde23(@model, dInh, Init, tdata, [], param);
 solution = deval(solution, x);
 
@@ -137,6 +210,12 @@ end
 
 
 
+% -------------------------------------------------------------------------
+% [4] model(t, state, delay, u)
+%     DDE right-hand side for menstrual endocrine dynamics with circadian forcing.
+%     In this calibration script, "u" carries only the circadian parameter set
+%     (no exogenous drug dosing is included here).
+% -------------------------------------------------------------------------
 function dstate = model(t, state, delay, param)
 
 par1 =         param(1);
