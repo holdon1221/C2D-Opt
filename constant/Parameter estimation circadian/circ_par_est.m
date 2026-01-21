@@ -1,3 +1,6 @@
+% ========================================================================= 
+% circ_par_est.m
+%
 % PURPOSE (paper-guided):
 %   Estimate the circadian forcing parameters used in the menstrual-cycle
 %   endocrine model by fitting a 24-hour cosine modulation to hormone
