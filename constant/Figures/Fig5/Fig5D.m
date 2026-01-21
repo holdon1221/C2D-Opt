@@ -29,7 +29,7 @@ data1 = [259.23, 		% Total EE dose (optimized) for 1:00 dosing time
 	209.58, 		% Total EE dose (optimized) for 8:00 dosing time
 	193.78, 		% Total EE dose (optimized) for 9:00 dosing time
 	193.78, 		% Total EE dose (optimized) for 10:00 dosing time
-        193.78, 	% Total EE dose (optimized) for 11:00 dosing time
+    193.78, 		% Total EE dose (optimized) for 11:00 dosing time
 	193.78, 		% Total EE dose (optimized) for 12:00 dosing time
 	193.78, 		% Total EE dose (optimized) for 13:00 dosing time
 	210.83, 		% Total EE dose (optimized) for 14:00 dosing time
@@ -39,7 +39,7 @@ data1 = [259.23, 		% Total EE dose (optimized) for 1:00 dosing time
 	229.22, 		% Total EE dose (optimized) for 18:00 dosing time
 	229.22, 		% Total EE dose (optimized) for 19:00 dosing time
 	240.09, 		% Total EE dose (optimized) for 20:00 dosing time
-        240.09, 	% Total EE dose (optimized) for 21:00 dosing time
+    240.09, 		% Total EE dose (optimized) for 21:00 dosing time
 	259.88, 		% Total EE dose (optimized) for 22:00 dosing time
 	259.88, 		% Total EE dose (optimized) for 23:00 dosing time
 	259.88];		% Total EE dose (optimized) for 24:00 dosing time
