@@ -1,36 +1,83 @@
-% This script draws Fig 2B(ii), depicting simulated hormone profiles without circadian rhythm.
+% =========================================================================
+% Fig2B_ii.m
+%
+% PURPOSE (paper correspondence):
+%   Simulate the endogenous hypothalamic–pituitary–ovarian (HPO) axis dynamics
+%   over one menstrual cycle using a delay differential equation (DDE) model,
+%   and generate the baseline hormone profiles shown in Fig. 2B(ii).
+%
+%   This script:
+%     1) Solves a mechanistic DDE model for LH, FSH, follicular stages,
+%        and luteal stages using dde23.
+%     2) Reconstructs circulating Estradiol (E2), Progesterone (P4),
+%        and Inhibin (Inh) from ovarian state variables.
+%     3) Plots time courses of FSH, LH, E2, and P4 over 28 days.
+%
+%
+% MODEL COMPONENTS:
+%   Pituitary:
+%     RPLH, LH, RPFSH, FSH
+%   Ovarian follicular stages:
+%     RcF → GrF → DomF
+%   Ovulation and luteal stages:
+%     Sc1 → Sc2 → Lut1 → Lut2 → Lut3 → Lut4
+%
+%   Steroid reconstruction:
+%     E2  = e0 + e1*GrF + e2*DomF + e3*Lut4
+%     P4  = p1*Lut3 + p2*Lut4
+%     Inh = h0 + h1*DomF + h2*Lut2 + h3*Lut3   
+%
+% OUTPUT:
+%   Fig. 1: FSH (IU/L)
+%   Fig. 2: LH  (IU/L)
+%   Fig. 3: Estradiol E2 (ng/mL)
+%   Fig. 4: Progesterone P4 (ng/mL)
+% =========================================================================
+
 function Fig2B_ii
 
-
+% -------------------------------------------------------------------------
+% Time grid for evaluation (0–28 days, high resolution)
+% -------------------------------------------------------------------------
 x    = 0:0.001:28;
 
-% Coefficients for E2 calculation based on follicle stages
+% -------------------------------------------------------------------------
+% Steroid reconstruction coefficients (from model calibration)
+% -------------------------------------------------------------------------
 e0 = 57.60/1000;         
 e1 = 0.0269/1000;        
 e2 = 0.4196/1000;        
-e3 = 0.4923/1000;   
-
-% Coefficients for P4 calculation
+e3 = 0.4923/1000;        
 p1 = 0.0032;             
-p2 = 0.1188;
-
-% Coefficients for Inh calculation
+p2 = 0.1188;             
 h0 = 0.6606;  
 h1 = 0.0193; 
 h2 = 0.0159; 
 h3 = 0.0119; 
 
+% -------------------------------------------------------------------------
+% Simulation time span (one cycle)
+% -------------------------------------------------------------------------
 tdata = [0 28];
 
-% Time delay for Inh feedback (in days)
-dInh =  1.5;
+% -------------------------------------------------------------------------
+% Feedback delay for inhibin action (days)
+% -------------------------------------------------------------------------
+dInh =  1.5; 
 
-% Initial conditions for 13 state variables:
-% [RPLH, LH, RPFSH, FSH, RcF, GrF, DomF, Sc1, Sc2, Lut1, Lut2, Lut3, Lut4]
+
+% -------------------------------------------------------------------------
+% Initial conditions (steady‑state values for 13 state variables)
+% -------------------------------------------------------------------------
 Init = [167.57; 11.81; 14.48; 11.41; 2.10; 4.12; 0.46; 1.06; 1.67; 4.16; 13.03; 16.48; 10.29];
 
+% -------------------------------------------------------------------------
+% Solve the DDE system
+% -------------------------------------------------------------------------
 solution = dde23(@model, dInh, Init, tdata);
 solutions = deval(solution, x);
+
+% Extract state variables
 LH = solutions(2,:)';
 FSH = solutions(4,:)';
 GrF = solutions(6,:)';
@@ -39,14 +86,17 @@ Lut2 = solutions(11,:)';
 Lut3 = solutions(12,:)';
 Lut4 = solutions(13,:)';
 
-
+% -------------------------------------------------------------------------
+% Reconstruct circulating hormones from ovarian compartments
+% -------------------------------------------------------------------------
 E2  = e0  + e1*GrF  + e2*DomF  + e3*Lut4;
 P4  = p1*Lut3  + p2*Lut4;
-Inh           = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
+Inh = h0 + h1*DomF + h2*Lut2 + h3*Lut3;
 
-
-
-figure(1)
+% -------------------------------------------------------------------------
+% Plot endocrine profiles (Fig. 2B(ii)
+% -------------------------------------------------------------------------
+ffigure(1)
 plot(x, FSH, 'k','LineWidth', 1);  
 set(gca,'FontSize',20)
 xlim([0 max(x)]);
@@ -90,10 +140,39 @@ ylabel('$P_4$ [ng/mL]','Interpreter','latex')
 
 end
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% PURPOSE:
+%   Implements a mechanistic HPO‑axis delay differential equation model
+%   describing:
+%     • Pituitary synthesis and secretion of LH and FSH,
+%     • Ovarian follicle growth and selection,
+%     • Luteinization and corpus luteum development,
+%     • Steroid (E2, P4) and inhibin‑mediated feedback.
+%
+% DELAY:
+%   A single discrete delay represents inhibin feedback latency on FSH
+%   synthesis, computed from delayed ovarian states.
+%
+% STATES:
+%   1  RPLH   : releasable pituitary LH
+%   2  LH     : circulating LH
+%   3  RPFSH  : releasable pituitary FSH
+%   4  FSH    : circulating FSH
+%   5  RcF    : recruited follicles
+%   6  GrF    : growing follicles
+%   7  DomF   : dominant follicle
+%   8–9  Sc1–Sc2 : ovulatory transition stages
+%   10–13 Lut1–Lut4 : luteal maturation stages
+%
+% FEEDBACK:
+%   E2 and P4 act on LH and FSH synthesis and clearance;
+%   Inhibin suppresses FSH via delayed DomF, Lut2, Lut3.
+% =========================================================================
 
 function dstate = model(t, state, delay, u)
 
-% Model parameters
+% Model descriptions are provided in Supplementary Section S1 Table 1 (page 4)
 kLH =  0.9661; 
 V0LH =  550.03; 
 V1LH = 3329.19; 
